@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.resizable-image {
+  position: relative;
+}
+
+.resizable-image::after {
+  content: "";
+  position: absolute;
+  width: 20px; /* 控制点的大小 */
+  height: 20px; /* 控制点的大小 */
+  background: red; /* 控制点颜色 */
+  right: 0; /* 使控制点位于图片的右下角 */
+  bottom: 0; /* 使控制点位于图片的右下角 */
+  cursor: nwse-resize; /* 拖动图标 */
+  z-index: 10; /* 确保控制点在图片上方 */
+}
+
+.resizable-image:hover::after {
+  background: darkred; /* 鼠标悬停时的颜色 */
+}

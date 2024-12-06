@@ -12,15 +12,24 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": "./",
+    "target": "ESNext",
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true, // 開啟裝飾器支持
+    "emitDecoratorMetadata": true, // 開啟元數據反射
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["*"],
+      "@/public": ["public/*"],
+      "@/components": ["components/*"],
+      "@/backend": ["backend/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+
   "exclude": ["node_modules"]
 }
