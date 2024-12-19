@@ -6,15 +6,19 @@ import { useSession } from "next-auth/react";
 
 const repairPage: React.FC = () => {
   const session = useSession();
+
+  //----前言開關-----
   const [isOpen, setOpen] = useState(true); //前言
   const toggleAccordion = () => {
     setOpen(!isOpen);
   }; // 前言開關
+  //----前言開關-----
 
+  //----相片上傳後顯示控制-----
   const [filePhoto, setFilePhoto] = useState<{ file: File; name: string }[]>(
     []
-  ); //後端照片上傳控制
-  // const [PhotoURL, setPhotoURL] = useState<string[]>([]); //前端照片存儲控制
+  ); //後端照片上傳儲存
+
   const fileHandle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     // console.log("照片上傳陣列" + JSON.stringify(files, null, 3));
@@ -46,16 +50,19 @@ const repairPage: React.FC = () => {
 
   const fileDelete = (index: number) => {
     setFilePhoto(filePhoto.filter((_, number) => number !== index));
-  };
+  }; //照片刪除
+  //----相片上傳後顯示控制-----
 
-  //以下checkbox
+  //----日曬checkbox-----
   const [selectedOption, setSelectedOption] = useState<string>("no");
   const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedOption(e.target.value);
     console.log(e.target.value);
     console.log(selectedOption); //這裡是異步的所以結果還沒fulfilled要用useEffect
   };
+  //----日曬checkbox-----
 
+  //----品牌選擇-----
   const [conditionerSelectedOption, setconditionerSelectedOption] = useState<
     string[]
   >([]);
@@ -73,10 +80,13 @@ const repairPage: React.FC = () => {
       setconditionerSelectedOption([...conditionerSelectedOption, value]);
     }
   }; //e傳進來是value  傳入option(str) 改變check(boolean)
+  //----品牌選擇-----
 
   useEffect(() => {
     console.log("刪除結果:" + conditionerSelectedOption);
   }, [conditionerSelectedOption]);
+
+  //-----坪數大小設置-----
 
   //每填一個數值直接重設每個格子比較快，寫太複雜
   const [squareMeter, setsquareMeter] = useState<string | number>("");
@@ -150,12 +160,8 @@ const repairPage: React.FC = () => {
     console.log("conditioner結果:" + conditionerSelectedOption);
   }, [selectedOption, conditionerSelectedOption]);
 
-  // const [checked, setchecked] = useState(false);//勾選模組 ps.沒用到隱藏了
-  // const gettingSunlightHandle = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setchecked(e.target.checked);
-  //   console.log(e.target.checked);
-  //   console.log(e.target.checked ? "已勾選" : "未勾選");
-  // };
+  //-----坪數大小設置-----
+
   console.log("顯示登入資訊:");
   console.dir(session, { depth: null });
   return (

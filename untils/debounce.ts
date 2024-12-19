@@ -14,7 +14,7 @@ export default function debounce<T extends (...args: any[]) => void>(
     }, delay);
   };
 }
-//此函數不建議在useEffect 寫 ,因為effect還要在清除一次和沒寫一樣
+//此函數不建議在useEffect 寫 ,因為effect還要在清除(移除代碼)一次和沒寫一樣
 //該函數的timeoutref 有作用,但effect 還是需要清除
 //effect 依賴組件生命週期控制副作用.如果沒清除可能會有意外行為
 //1.如果useState重複刷新 , 可能會有多個debounce在運行 不會重複呼叫debounce
