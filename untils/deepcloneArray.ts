@@ -1,10 +1,15 @@
-type DeepClone<T> = T extends (infer U)[]
-  ? DeepClone<U>[]
-  : T extends object
-    ? { [K in keyof T]: DeepClone<T[K]> }
-    : T;
+type DeepClone<T> = T extends File
+  ? T // 如果是 File，直接返回自身
+  : T extends (infer U)[]
+    ? DeepClone<U>[] // 如果是陣列，遞歸處理元素
+    : T extends object
+      ? { [K in keyof T]: DeepClone<T[K]> } // 如果是物件，遞歸處理屬性
+      : T; // 其他類型直接返回自身
 
 function deepClone<T>(item: T): DeepClone<T> {
+  if (item instanceof File) {
+    return item as DeepClone<T>; // 如果是 File，直接返回
+  }
   if (Array.isArray(item)) {
     // 递归克隆数组中的每个元素
     return item.map(deepClone) as DeepClone<T>; // 使用类型断言确保类型匹配

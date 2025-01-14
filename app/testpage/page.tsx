@@ -1,7 +1,7 @@
 import React from "react";
 import RichTextEditor from "@/components/RichTextEditor";
 import Text from "@/components/test";
-import ImageUpload from "@/components/imageUpload";
+import ImageUpload from "@/components/ImageUpload";
 
 const page = () => {
   return (
