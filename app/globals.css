@@ -21,3 +21,69 @@
 .resizable-image:hover::after {
   background: darkred; /* 鼠标悬停时的颜色 */
 }
+@layer base {
+  html {
+    @apply text-base; /* 預設文字大小 */
+  }
+
+  @screen sm {
+    html {
+      @apply text-lg; /* sm 以上 */
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      @apply w-3 h-3;
+    }
+  }
+
+  @screen md {
+    html {
+      @apply text-xl; /* md 以上 */
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      @apply w-3 h-3;
+    }
+  }
+
+  @screen lg {
+    html {
+      @apply text-2xl; /* lg 以上 */
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      @apply w-3 h-3;
+    }
+  }
+
+  @screen xl {
+    html {
+      @apply text-3xl; /* xl 以上 */
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      @apply w-3 h-3;
+    }
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}

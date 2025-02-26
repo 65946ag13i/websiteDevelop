@@ -1,57 +1,27 @@
 "use client";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
+import ImageUpload from "@/components/ImageUpload";
 
 const repairPage: React.FC = () => {
   const session = useSession();
 
+  //子組件上移
+  const [photoURL, setPhotoURL] = useState<(string[] | null)[][]>([
+    [null, null],
+  ]);
+  const [photoFile, setphotoFile] = useState<(File[] | null)[][]>([
+    [null, null],
+  ]);
+
+  //子組件上移
   //----前言開關-----
   const [isOpen, setOpen] = useState(true); //前言
   const toggleAccordion = () => {
     setOpen(!isOpen);
-  }; // 前言開關
+  };
   //----前言開關-----
-
-  //----相片上傳後顯示控制-----
-  const [filePhoto, setFilePhoto] = useState<{ file: File; name: string }[]>(
-    []
-  ); //後端照片上傳儲存
-
-  const fileHandle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    // console.log("照片上傳陣列" + JSON.stringify(files, null, 3));
-    // console.dir(files, { depth: null });
-    if (files && filePhoto.length === 0) {
-      const fileArray = Array.from(files).map((file) => {
-        return { file, name: file.name };
-      });
-      setFilePhoto(fileArray);
-    } else if (files && filePhoto.length > 0) {
-      const fileArray = Array.from(files).map((file) => {
-        return { file, name: file.name };
-      });
-      setFilePhoto([...filePhoto, ...fileArray]);
-    }
-    // if (files) {
-    //儲存照片資訊到對象
-    // console.log("顯示照片陣列");
-    // console.log(fileArray);
-    // setFilePhoto(fileArray); //陣列存起來
-
-    // const photoURL = fileArray.map((file) => {
-    //   return URL.createObjectURL(file.file);
-    // });
-    // console.log("顯示URL" + photoURL);
-    // setPhotoURL(photoURL);
-    // }
-  }; //照片預覽及存儲
-
-  const fileDelete = (index: number) => {
-    setFilePhoto(filePhoto.filter((_, number) => number !== index));
-  }; //照片刪除
-  //----相片上傳後顯示控制-----
 
   //----日曬checkbox-----
   const [selectedOption, setSelectedOption] = useState<string>("no");
@@ -66,6 +36,7 @@ const repairPage: React.FC = () => {
   const [conditionerSelectedOption, setconditionerSelectedOption] = useState<
     string[]
   >([]);
+
   const conditionerCheckboxHandle = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -172,7 +143,7 @@ const repairPage: React.FC = () => {
           className="max-w-lg mx-auto bg-orange-400 overflow-"
         >
           <div className="text-center" onClick={toggleAccordion}>
-            ▼ 前言 ▼
+            ▼ 通知 ▼
           </div>
 
           <div
@@ -182,29 +153,32 @@ const repairPage: React.FC = () => {
             老闆身兼多職需要看現場估價裝冷氣維修 <br />
             工作繁忙時，無法馬上報價 <br />
             如太久沒報價可能是忘記了請通知老闆
-            <br /> 報價資訊將會保留一年
+            <br /> 上傳資訊將會保留一年
           </div>
         </div>
         {/* {session ? <div>123</div> : <div>123</div>} */}
-        <div>登入註冊</div>
+        <div>
+          <a href="/signin">登入</a>
+          <a href="/register">註冊</a>
+        </div>
 
         <div data-mark="報價模塊" className="flex  w-full ">
-          <div className="w-1/5 bg-yellow-600">
+          <div className="text-center w-1/5 bg-yellow-600">
             <div>新估價</div>
             <div>歷史估價</div>
             <div>修改密碼</div>
             <div>登出</div>
           </div>
-          <div className="w-4/5  bg-blue-400">
-            <div>簡易留言板?</div>
+          <div className="text-center w-4/5  bg-blue-400">
+            {/*報價品牌*/}
             <div>需要報價的品牌</div>
 
             <div>
               <label>
                 <input
                   type="checkbox"
-                  value="option1"
-                  checked={conditionerSelectedOption.includes("option1")}
+                  value="國際牌"
+                  checked={conditionerSelectedOption.includes("國際牌")}
                   onChange={conditionerCheckboxHandle}
                 />
                 國際牌
@@ -213,8 +187,8 @@ const repairPage: React.FC = () => {
               <label>
                 <input
                   type="checkbox"
-                  value="option2"
-                  checked={conditionerSelectedOption.includes("option2")}
+                  value="日立"
+                  checked={conditionerSelectedOption.includes("日立")}
                   onChange={conditionerCheckboxHandle}
                 />
                 日立
@@ -222,8 +196,8 @@ const repairPage: React.FC = () => {
               <label>
                 <input
                   type="checkbox"
-                  value="option3"
-                  checked={conditionerSelectedOption.includes("option3")}
+                  value="華菱"
+                  checked={conditionerSelectedOption.includes("華菱")}
                   onChange={conditionerCheckboxHandle}
                 />
                 華菱
@@ -232,49 +206,56 @@ const repairPage: React.FC = () => {
 
             <div>其他品牌也可以詢問:</div>
             <input type="textarea" />
-            <div>輸入房間大小(長寬和平方公尺 選一組輸入)</div>
-            <div>
-              <label htmlFor="length">長:</label>
-              <input
-                type="number"
-                id="length"
-                value={length}
-                onChange={saveLength}
-              />
-              <label htmlFor="width">寬:</label>
-              <input
-                type="number"
-                id="width"
-                value={width}
-                onChange={saveWidth}
-              />
-              <label htmlFor="squareMeter">平方公尺:</label>
-              <input
-                type="number"
-                id="squareMeter"
-                value={squareMeter}
-                onChange={handleSquareMeterChange}
-              />
-              <label htmlFor="squareMeter">坪數:</label>
-              <input
-                type="number"
-                id="ping"
-                value={ping}
-                onChange={handlePingChange}
-              />
-            </div>
-            {/* <div>
-              <label htmlFor="gettingSunlight">
-                房間牆面是否有太陽照射或是在最頂樓?
-              </label>
-              <input
-                type="checkbox"
-                id="gettingSunlight"
-                checked={checked}
-                onChange={gettingSunlightHandle}
-              />
-            </div> */}
 
+            {/*報價品牌*/}
+            {/*坪數計算*/}
+            <div>輸入房間大小(長x寬、坪數和平方公尺 選一組輸入)</div>
+            <div>
+              <div>
+                <label htmlFor="length">長:</label>
+                {/*leading-tight等價CSS line-height:1.25*/}
+                <input
+                  className="leading-tight"
+                  style={{ width: "5rem" }}
+                  type="number"
+                  id="length"
+                  value={length}
+                  onChange={saveLength}
+                />
+                <label htmlFor="width">寬:</label>
+                <input
+                  className="leading-tight"
+                  style={{ width: "5rem" }}
+                  type="number"
+                  id="width"
+                  value={width}
+                  onChange={saveWidth}
+                />
+              </div>
+              <div>
+                <label htmlFor="squareMeter">平方公尺:</label>
+                <input
+                  className="leading-tight"
+                  style={{ width: "5rem" }}
+                  type="number"
+                  id="squareMeter"
+                  value={squareMeter}
+                  onChange={handleSquareMeterChange}
+                />
+                <label htmlFor="squareMeter">坪數:</label>
+                <input
+                  className="leading-tight"
+                  style={{ width: "5rem" }}
+                  type="number"
+                  id="ping"
+                  value={ping}
+                  onChange={handlePingChange}
+                />
+              </div>
+            </div>
+            {/*坪數計算*/}
+
+            {/*西曬選擇*/}
             <div className="flex " data-mark="西曬">
               <div>房間牆面是否有太陽照射或是在最頂樓?</div>
               <div>
@@ -301,50 +282,31 @@ const repairPage: React.FC = () => {
                 </label>
               </div>
             </div>
+            {/*西曬選擇*/}
 
-            <div className="w-[50%] mx-auto">
-              {filePhoto &&
-                filePhoto.map((item, index) => (
-                  <div key={index}>
-                    <Image
-                      src={URL.createObjectURL(item.file)}
-                      key={index + 1}
-                      layout="responsive"
-                      alt="上傳圖片預覽"
-                      width={150}
-                      height={100}
-                    />
-                    <div>圖片:{index + 1}</div>
-                    <div>圖片名稱:{item.file.name}</div>
-                    <button
-                      onClick={() => fileDelete(index)}
-                      className="bg-white"
-                    >
-                      刪除
-                    </button>
-                  </div>
-                ))}
-            </div>
+            {/*圖片建議內容*/}
+
+            <div>請盡量提供以下內容圖片，比較好報價</div>
             <div>
-              <div>請盡量提供以下內容圖片，比較好報價</div>
-              <div>
-                <ol className="list-decimal">
-                  <li>內機安裝位置</li>
-                  <li>外機安裝位置(盡量拍攝大範圍，以評估施工難度)</li>
-                  <li>內、外機排水位置</li>
-                </ol>
-              </div>
-              <input
-                type="file"
-                multiple
-                onChange={fileHandle}
-                id="photofile"
-                style={{ display: "none" }}
-              />
-              <label htmlFor="photofile">選擇相片</label>
-              <div>目前照片數量:{filePhoto.length}</div>
-              <button className="bg-blue-300 px-2 py-2 rounded-md">上傳</button>
+              <ol className=" list-none list-inside pl-2">
+                <li>內機安裝位置</li>
+                <li>外機安裝位置</li>
+                <li>電源到外機的位置</li>
+                <li>內機、外機排水位置</li>
+              </ol>
             </div>
+            {/*圖片建議內容*/}
+            <ImageUpload
+              photoFile={photoFile}
+              setphotoFile={setphotoFile}
+              photoURL={photoURL}
+              setPhotoURL={setPhotoURL}
+            />
+            <div>
+              {" "}
+              <input type="textarea" />
+            </div>
+
             <button>送出!</button>
           </div>
         </div>

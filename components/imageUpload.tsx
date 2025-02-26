@@ -88,15 +88,28 @@ async function AddPhoto(fileArray: FileList) {
   // return photoURL as string[];
 }
 
-const ImageUpload: React.FC = () => {
+interface ChildProps {
+  photoFile: (File[] | null)[][];
+  setphotoFile: React.Dispatch<React.SetStateAction<(File[] | null)[][]>>;
+  photoURL: (string[] | null)[][];
+  setPhotoURL: React.Dispatch<React.SetStateAction<(string[] | null)[][]>>;
+}
+
+const ImageUpload: React.FC<ChildProps> = ({
+  photoFile,
+  setphotoFile,
+  photoURL,
+  setPhotoURL,
+}) => {
   //相片上傳用File blob
-  const [photoFile, setphotoFile] = useState<(File[] | null)[][]>([
-    [null, null],
-  ]);
+  // const [photoFile, setphotoFile] = useState<(File[] | null)[][]>([
+  //   [null, null],
+  // ]);
   //照片顯示用file URL
-  const [phtotURL, setPhotoURL] = useState<(string[] | null)[][]>([
-    [null, null],
-  ]);
+  // const [phtotURL, setPhotoURL] = useState<(string[] | null)[][]>([
+  //   [null, null],
+  // ]);
+
   //刪除分組
   const deleteFileButton = (index: number) => {
     setphotoFile((prev) => {
@@ -203,8 +216,8 @@ const ImageUpload: React.FC = () => {
             <div key={"group" + index}>
               <div>第{index + 1}組內外機照片</div>
               <div>內機</div>
-              {phtotURL[index][1] &&
-                phtotURL[index][1].map((photo, index2) => (
+              {photoURL[index][1] &&
+                photoURL[index][1].map((photo, index2) => (
                   <>
                     <Image
                       src={photo}
@@ -237,8 +250,8 @@ const ImageUpload: React.FC = () => {
               ></input>
 
               <div>外機</div>
-              {phtotURL[index][2] &&
-                phtotURL[index][2].map((photo, index2) => (
+              {photoURL[index][2] &&
+                photoURL[index][2].map((photo, index2) => (
                   <>
                     <Image
                       src={photo}

@@ -44,9 +44,9 @@ const NavigationBar: React.FC = () => {
       <a href="/example" className="px-4">
         冷氣髒污案例
       </a>
-      <a href="/Recruitment" className="px-4">
+      {/* <a href="/Recruitment" className="px-4">
         招募
-      </a>
+      </a> */}
     </div>
   );
 };

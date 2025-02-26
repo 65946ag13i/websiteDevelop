@@ -3,8 +3,11 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { User } from "@/backend/entities/User"; // 引入 User 實體
-import { initDataSource } from "@/backend/data-source"; //  TypeORM 的資料源
+import { initDataSourse } from "@/backend/data-source"; //  TypeORM 的資料源
 import bcrypt from "bcrypt";
+import { oauth2List } from "@/backend/entities/oauth2List";
+import { validate } from "class-validator";
+import { error } from "console";
 
 declare module "next-auth" {
   //套件擴展
@@ -13,7 +16,7 @@ declare module "next-auth" {
       id: string; // 添加自定義屬性
       name?: string | null;
       email?: string | null;
-      image?: string | null;
+      // image?: string | null;
     };
   }
 }
@@ -23,7 +26,7 @@ declare module "next-auth/jwt" {
     id: string;
     name?: string | null;
     email?: string | null;
-    image?: string | null;
+    // image?: string | null;
   }
 }
 
@@ -50,36 +53,29 @@ export const authOptions: NextAuthOptions = {
           // console.log(credentials.email);
           // console.log("密碼驗證" + credentials.password);
           const { email, password } = credentials; //解構
-          const getDataSourse = await initDataSource(); //資料庫初始化
-          if (getDataSourse.isInitialized) {
-            console.log("Database connection successful in NextAuth!");
-          }
+          const getDataSourse = await initDataSourse(); //資料庫初始化
           const userRepository = await getDataSourse.getRepository(User); //取得實體(entity)
-          // if (!userRepository) {
-          //   console.log("取得實體失敗");
-          // } else {
-          //   console.log("已取得實體");
-          // }
-          const user = await userRepository.findOne({ where: { email } }); //尋找user
-          // console.log("尋找user");
-          // console.log(user);
+          const user = await userRepository.findOne({
+            where: { email: email },
+          }); //尋找user
+
           if (!user || !user.id || !user.email) {
-            //驗證user
             throw new Error("無法找到eamill");
           }
 
           const isValidPassword = await bcrypt.compare(password, user.password); //驗證password
-          if (!isValidPassword) {
-            throw new Error("Invalid password");
+          if (isValidPassword) {
+            return {
+              id: user.id?.toString(), // 確保 id 是字符串
+              email: user.email,
+              name: user.name,
+            };
+          } else {
+            throw new Error("密碼錯誤");
           }
-          console.log(user);
-          return {
-            id: user.id?.toString(), // 確保 id 是字符串
-            email: user.email,
-          };
         } catch (error) {
           if (error instanceof Error) {
-            console.log("日誌拋出錯誤");
+            console.error("日誌拋出錯誤");
 
             // console.dir(error, { depth: null });
             throw new Error(error.message);
@@ -96,10 +92,85 @@ export const authOptions: NextAuthOptions = {
   },
   session: { strategy: "jwt" },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account && account.provider && user && user.email && user.name) {
+        if (account.provider == "login") {
+          return true;
+        }
+        try {
+          if (account.provider == "google") {
+            const DataSourse = await initDataSourse();
+            const userRepository = await DataSourse.getRepository(User);
+            //查找重複email
+            const userData = await userRepository.findOne({
+              select: ["email"],
+              where: { email: user.email },
+            });
+
+            if (!userData) {
+              //
+              const success = await DataSourse.manager.transaction(
+                async (EntityManager) => {
+                  if (
+                    account &&
+                    account.provider &&
+                    user &&
+                    user.email &&
+                    user.name
+                  ) {
+                    const userSave = new User();
+                    userSave.email = user.email;
+                    userSave.name = user.name;
+
+                    const useroauth = new oauth2List();
+                    useroauth.provider = account.provider;
+                    useroauth.profileId = user.id;
+                    useroauth.name = user.name;
+
+                    userSave.oauth2List = [useroauth];
+
+                    const userErrors = await validate(userSave);
+                    //驗證錯誤
+                    if (userErrors.length > 0) {
+                      const filiterUserErrors = userErrors.filter((error) =>
+                        ["email", "name"].includes(error.property)
+                      );
+                      if (filiterUserErrors.length > 0) {
+                        return "/signin";
+                      }
+                    }
+                    const oauth2errors = await validate(useroauth);
+                    if (oauth2errors.length > 0) {
+                      return "/signin";
+                    }
+                    //驗證錯誤
+
+                    await EntityManager.save(userSave);
+                  }
+                }
+              );
+              if (success) {
+                return true;
+              } else {
+                return "/signin";
+              }
+            }
+          }
+        } catch (e) {
+          console.error(e);
+          return "/signin";
+        }
+
+        return "/signin";
+      }
+
+      return "/signin";
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
+        token.email = user.email;
         token.expires = Date.now() + 7 * 24 * 60 * 60 * 1000;
       }
       return token;
@@ -107,6 +178,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.user.id = typeof token.id === "string" ? token.id : ""; //unknow 除非斷言 或類型檢查 才能清除error
       session.user.name = token.name;
+      session.user.email = token.email;
       return session;
     },
     // async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {

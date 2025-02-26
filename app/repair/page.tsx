@@ -6,7 +6,7 @@ const repairPage: React.FC = () => {
     <>
       <div
         data-mark="fixBody"
-        className="flex flex-col items-center  w-[70%] mx-auto h-screen"
+        className="flex flex-col items-center  w-[70%] mx-auto"
       >
         <div data-mark="關於維修" className=" w-full">
           <div className=" text-lg text-center w-full mx-auto">關於維修</div>
