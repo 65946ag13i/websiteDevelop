@@ -23,7 +23,7 @@
       }
     ],
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["./*"],
       "@/public": ["public/*"],
       "@/components": ["components/*"],
       "@/backend": ["backend/*"]

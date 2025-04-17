@@ -171,14 +171,15 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
-        token.expires = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        token.expires = Date.now() + 30 * 24 * 60 * 60 * 1000;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.id = typeof token.id === "string" ? token.id : ""; //unknow 除非斷言 或類型檢查 才能清除error
-      session.user.name = token.name;
-      session.user.email = token.email;
+      // session.user.id = typeof token.id === "string" ? token.id : ""; //unknow 除非斷言 或類型檢查 才能清除error
+      // session.user.name = token.name;
+      // session.user.email = token.email;
+      session.user = token;
       return session;
     },
     // async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {

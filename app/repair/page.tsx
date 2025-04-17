@@ -4,16 +4,10 @@ import React from "react";
 const repairPage: React.FC = () => {
   return (
     <>
-      <div
-        data-mark="fixBody"
-        className="flex flex-col items-center  w-[70%] mx-auto"
-      >
-        <div data-mark="關於維修" className=" w-full">
+      <div className="flex flex-col items-center  w-[70%] mx-auto">
+        <div className=" w-full">
           <div className=" text-lg text-center w-full mx-auto">關於維修</div>
-          <div
-            data-mark="關於置中"
-            className="block text-left max-w-md mx-auto"
-          >
+          <div className="block text-left max-w-md mx-auto">
             由於現在的電器都是微電腦，幾乎都要找公司才能修理
             <br />
             只有冷氣相關才能處理，包含漏水、不會冷...等問題才能處理
@@ -31,12 +25,10 @@ const repairPage: React.FC = () => {
           </div>
         </div>
 
-        <div data-mark="服務站資訊" className=" w-full text-center">
-          <div data-mark="標題" className="text-lg mx-auto">
-            以下提供各品牌服務站及線上報修
-          </div>
-          <div data-mark="控制服務站位子" className=" w-full text-center">
-            <div data-mark="國際">
+        <div className=" w-full text-center">
+          <div className="text-lg mx-auto">以下提供各品牌服務站及線上報修</div>
+          <div className=" w-full text-center">
+            <div>
               <div>國際牌服務站</div>
               <div>
                 <a
@@ -59,7 +51,7 @@ const repairPage: React.FC = () => {
                 </a>
               </div>
             </div>
-            <div data-mark="日立">
+            <div>
               <div>日立服務站</div>
 
               <div>
@@ -83,7 +75,7 @@ const repairPage: React.FC = () => {
                 </a>
               </div>
             </div>
-            <div data-mark="聲寶">
+            <div>
               <div>聲寶服務站</div>
               <a
                 href="https://www.hitachiaircon.com/tw/service/maintain"
@@ -94,7 +86,7 @@ const repairPage: React.FC = () => {
                 聲寶線上維修及服務據點
               </a>
             </div>
-            <div data-mark="華菱">
+            <div>
               <div>華菱服務站</div>
               <div>
                 <a

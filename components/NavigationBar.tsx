@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
 // fixed top-0 left-0 w-full
 const NavigationBar: React.FC = () => {
@@ -27,23 +29,37 @@ const NavigationBar: React.FC = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [sticky]); // 只在 sticky 改變時執行
+  const urlSet = usePathname();
+
   return (
     <div
       id="navbar"
-      className={`flex flex-row ${isFixed ? "fixed top-0 left-1/2 transform -translate-x-1/2" : ""}  items-center justify-center divide-x divide-gray-400 bg-white w-full z-10`}
+      className={`flex flex-row ${isFixed ? "fixed top-0 left-1/2 transform -translate-x-1/2" : ""}  items-center justify-center divide-x divide-gray-400 bg-gray-100 w-full z-10 border-y-2 border-gray-700`}
     >
-      <a href="/" className=" px-4">
+      <Link
+        href="/"
+        className={`px-4 ${urlSet == "/" ? "bg-webGreenToBrown-700" : ""}`}
+      >
         首頁
-      </a>
-      <a href="/repair" className="px-4">
+      </Link>
+      <Link
+        href="/repair"
+        className={`px-4 ${urlSet == "/repair" ? "bg-webGreenToBrown-700" : ""}`}
+      >
         維修
-      </a>
-      <a href="/quote" className="px-4">
-        報價
-      </a>
-      <a href="/example" className="px-4">
+      </Link>
+      <Link
+        href="/quote"
+        className={`px-4 ${urlSet == "/quote" ? "bg-webGreenToBrown-700" : ""}`}
+      >
+        簡易報價
+      </Link>
+      <Link
+        href="/example"
+        className={`px-4 ${urlSet == "/example" ? "bg-webGreenToBrown-700" : ""}`}
+      >
         冷氣髒污案例
-      </a>
+      </Link>
       {/* <a href="/Recruitment" className="px-4">
         招募
       </a> */}

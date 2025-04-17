@@ -1,7 +1,13 @@
 import React from "react";
 import Image from "next/image";
+import { AppProps } from "next/app";
+import { Store } from "@reduxjs/toolkit";
 
-const HomePage: React.FC = () => {
+interface MyAppProps extends AppProps {
+  store: Store;
+}
+
+const HomePage = ({ Component, pageProps }: MyAppProps) => {
   return (
     <>
       <div className="flex justify-center  ">

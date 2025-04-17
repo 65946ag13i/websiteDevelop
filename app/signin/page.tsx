@@ -136,7 +136,7 @@ const ComponentName: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col  sm:w-[80%] mx-auto  bg-yellow-50">
+    <div className="flex flex-col  sm:w-[80%] mx-auto  0">
       {message && <div className="mx-auto bg-slate-200 mt-5">{message}</div>}
       <form
         onSubmit={loginhandle}
@@ -152,7 +152,7 @@ const ComponentName: React.FC = () => {
           onChange={(e) => {
             setemail(e.target.value);
           }}
-          className={`pt-1 rounded-md border-2  shadow  ${emailAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+          className={`pt-1 rounded-md border-2  border-black shadow  ${emailAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
           onAnimationEnd={() => setemailAnimation(false)}
           autoComplete="email"
         />
