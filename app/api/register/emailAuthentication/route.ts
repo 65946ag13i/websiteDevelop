@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import sendEmailMiddleware from "@/untils/serverMailer";
+import sendEmailMiddleware from "@/utils/serverMailer";
 import { VerificationCode } from "@/backend/entities/verification_codes";
 import { initDataSourse } from "@/backend/data-source";
 import { validate } from "class-validator";

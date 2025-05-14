@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { emailTemplates } from "@/untils/serverMailerTemplates";
+import { emailTemplates } from "@/utils/serverMailerTemplates";
 
 //驗證碼生成
 function generateVerificationCode(): string {

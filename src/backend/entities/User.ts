@@ -13,7 +13,7 @@ import { oauth2List } from "@/backend/entities/oauth2List";
 export class User {
   @PrimaryGeneratedColumn()
   id!: number;
-  //! 是告訴一定有數值
+  //.  !是告訴一定有數值
   @Column({ type: "varchar", nullable: false })
   @Length(1, 50)
   @Matches(

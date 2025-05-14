@@ -21,6 +21,12 @@
 .resizable-image:hover::after {
   background: darkred; /* 鼠标悬停时的颜色 */
 }
+.toop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 @layer base {
   html {
     @apply text-base; /* 預設文字大小 */

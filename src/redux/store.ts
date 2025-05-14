@@ -3,7 +3,7 @@ import uploadReducer from "./features/upload/uploadSlice";
 
 export const makeStore = () => {
   return configureStore({
-    reducer: { upload: uploadReducer },
+    reducer: { uploadState: uploadReducer },
   });
 };
 

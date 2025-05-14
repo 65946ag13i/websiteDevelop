@@ -92,17 +92,22 @@ self.onmessage = async function (event) {
   }: concurrently) => {
     const executing: Promise<void>[] = [];
     const results: uploadReturn[] = [];
-
+    let i = 0;
     for (const task of chunkQue) {
       const taskPromise = task()
         .then((result) => {
+          i++;
           results.push(result);
           self.postMessage({
             success: "uploading",
-            progress: Math.floor(results.length / totalChunks) * 100,
+            progress: Math.floor(i / totalChunks) * 100,
           });
         })
         .catch((error) => {
+          self.postMessage({
+            success: "failure",
+            progress: "",
+          });
           return console.log(error);
         })
         .finally(() => {

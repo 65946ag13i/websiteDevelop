@@ -3,8 +3,14 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { getFileArrayBuffer } from "@/utils/fileReader/getFileArrayBuffer";
+import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
+import {
+  setFileTotalCount,
+  setFileUploadPercentage,
+  setWindowOpen,
+  setUploadState,
+  setNumberOfCurrentFiles,
+} from "@/redux/features/upload/uploadSlice";
 interface uploadFileWithWorker {
   pictureName: string;
   file: File;
@@ -14,24 +20,31 @@ interface uploadFileWithWorker {
 function uploadFileWithWorker(
   uploadFileWithWorker: uploadFileWithWorker,
   worker: Worker
-) {
+): Promise<{ success: boolean }> {
   return new Promise((resolve, reject) => {
+    const dispatch = useAppDispatch();
     worker.postMessage(uploadFileWithWorker);
     worker.onmessage = (event) => {
       const { success, progress } = event.data;
       switch (success) {
         case "uploading":
-        //設定進度
+          //設定進度
+          dispatch(setFileUploadPercentage(progress));
+          break;
         case "failure":
-        //進度取消
+          //進度取消
+          dispatch(setUploadState("上傳失敗"));
+          reject({ success: false });
+          break;
         case "success":
           //總進度完成+1
           resolve({ success: true });
           console.log("123");
+          break;
         default:
           reject({ success: false });
+          break;
       }
-      resolve({ success: true });
     };
     worker.onerror = () => {
       reject({ success: false });
@@ -53,13 +66,9 @@ const repairPage: React.FC = () => {
   //檢查錯誤後函式推入列隊
   //創建UUID,worker
   //導出總照片數量、上傳陣列
-  async function fileSequentially(fileUUID: string) {
+  async function fileSequentially(fileUUID: string, worker: Worker) {
     const UUID = fileUUID;
-    const worker = new Worker(
-      new URL("../../utils/webWorker/fileUpload.ts", import.meta.url)
-    );
-    let photoCount = 0;
-    const uploadQueue = [];
+    const uploadQueue: (() => Promise<{ success: boolean }>)[] = [];
 
     for (const [index, firstNested] of photoFile.entries()) {
       if (index < 4) {
@@ -67,9 +76,9 @@ const repairPage: React.FC = () => {
         for (const [secondIndex, secondNested] of firstNested.entries()) {
           if (!secondNested || secondNested.length == 0) {
             //如果沒有照片數組或為空,返回0及空數組
-            return { photoCount: 0, uploadQueue: [] };
+            return { uploadQueue: [] };
           }
-          photoCount += secondNested.length;
+
           if (secondIndex < 2) {
             //內外機只有兩組別
             for (const [fileindex, file] of secondNested.entries()) {
@@ -81,7 +90,7 @@ const repairPage: React.FC = () => {
                   fileUUID: UUID,
                 };
                 uploadQueue.push(() => {
-                  uploadFileWithWorker(props, worker);
+                  return uploadFileWithWorker(props, worker);
                 });
               }
             }
@@ -89,8 +98,7 @@ const repairPage: React.FC = () => {
         }
       }
     }
-
-    return { photoCount, uploadQueue };
+    return { uploadQueue };
   }
   //簡易認證文字表單
   async function easyFormWordCheck(): Promise<boolean> {
@@ -230,18 +238,21 @@ const repairPage: React.FC = () => {
   const dataUpload = async () => {
     const UUID = crypto.randomUUID();
     const upload = { UUID, conditionerSelectedOption, bands, remarks };
-    //先送出文字表單建立TABLE 成功後再傳送照片，其中一個失敗就都刪除表單
-    //前端返回成功  失敗跳出警示窗
-
-    const imageCheck = await fileSequentially(UUID);
+    const worker = new Worker(
+      new URL("../../src/utils/webWorker/fileUpload.ts", import.meta.url)
+    );
+    //驗證圖片數量，返回圖片總量、待上傳異步陣列，傳入UUID
+    const imageCheck = await fileSequentially(UUID, worker);
+    if (imageCheck.uploadQueue.length == null) {
+      return;
+    }
+    const imageArray = imageCheck.uploadQueue;
+    //簡易驗證字符串
     const formWordCheck: boolean = await easyFormWordCheck();
-
-    if (
-      formWordCheck &&
-      imageCheck.photoCount !== 0 &&
-      imageCheck.uploadQueue.length !== 0
-    ) {
+    //驗證表單及圖片數量後啟動上傳
+    if (formWordCheck && imageArray.length !== 0) {
       //後端建立表單
+      //todo 記得寫try
       const contentUpload = await fetch(
         `${process.env.WEBSIDE_URL}/api/register/emailAuthentication`,
         {
@@ -252,15 +263,44 @@ const repairPage: React.FC = () => {
         }
       );
       if (contentUpload.ok) {
+        const dispatch = useAppDispatch();
+        //定義相片總數
+        dispatch(setFileTotalCount(imageArray.length));
+        //開啟上傳視窗
+        dispatch(setWindowOpen(true));
+
+        //循環上傳相片異步陣列
+        dispatch(setUploadState("上傳中"));
+        for (let index = 0; index < imageArray.length; index++) {
+          //相片加一
+          dispatch(setNumberOfCurrentFiles(index + 1));
+          //todo 寫try
+          try {
+            const element: { success: boolean } = await imageArray[index]();
+            if (element.success == false) {
+              dispatch(setUploadState("上傳失敗"));
+              break;
+            }
+          } catch (error) {
+            dispatch(setUploadState("上傳失敗"));
+            break;
+          } finally {
+            dispatch(setFileUploadPercentage(0));
+          }
+        }
+        dispatch(setUploadState("上傳完成"));
       }
+      //關閉worker
+
+      worker.terminate();
     }
 
     //如果文字表單上傳成功 圖片上傳 啟動分片
-    if (true) {
-      const worker = new Worker(
-        new URL("../../utils/webWorker/fileUpload.ts", import.meta.url)
-      );
-    }
+    // if (true) {
+    //   const worker = new Worker(
+    //     new URL("../../utils/webWorker/fileUpload.ts", import.meta.url)
+    //   );
+    // }
   };
   interface imageUpload {
     pictureName: string;

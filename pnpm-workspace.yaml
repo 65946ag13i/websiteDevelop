@@ -1,4 +1,7 @@
 onlyBuiltDependencies:
   - '@parcel/watcher'
+  - '@sap/hana-client'
   - bcrypt
   - sharp
+  - sqlite3
+  - unrs-resolver

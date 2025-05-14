@@ -3,11 +3,7 @@ import Image from "next/image";
 import { AppProps } from "next/app";
 import { Store } from "@reduxjs/toolkit";
 
-interface MyAppProps extends AppProps {
-  store: Store;
-}
-
-const HomePage = ({ Component, pageProps }: MyAppProps) => {
+const HomePage = () => {
   return (
     <>
       <div className="flex justify-center  ">

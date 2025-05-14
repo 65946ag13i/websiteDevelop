@@ -1,8 +1,9 @@
+import "./globals.css";
 import React from "react";
-import "./globals.css"; // 全局样式
 // import Head from "next/head";
 import WebsideHeader from "@/components/WebsideHeader";
 import NavigationBar from "@/components/NavigationBar";
+import UploadState from "@/components/UploadState";
 import { ReduxProvider } from "@/components/ReduxProvider/ReduxProvider";
 import { ReactNode } from "react";
 
@@ -10,22 +11,6 @@ export const metadata = {
   title: "建豐電器有限公司",
   description: "家庭電器",
   keywords: "冷氣維修,家庭電器經銷商,冷氣清洗",
-  charset: "UTF-8", // 設置字符集
-  links: [
-    {
-      rel: "preconnect",
-      href: "https://fonts.googleapis.com",
-    },
-    {
-      rel: "preconnect",
-      href: "https://fonts.gstatic.com",
-      crossOrigin: "anonymous",
-    },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap",
-    },
-  ],
 };
 
 export const viewport = {
@@ -35,10 +20,9 @@ export const viewport = {
 
 interface ReduxProviderProps {
   children: ReactNode;
-  initialState?: any; // 初始狀態（可選）
 }
 
-const RootLayout = ({ children, initialState }: ReduxProviderProps) => {
+const RootLayout = ({ children }: ReduxProviderProps) => {
   return (
     <html lang="zh">
       {/* <Head>
@@ -59,15 +43,25 @@ const RootLayout = ({ children, initialState }: ReduxProviderProps) => {
         <meta name="keywords" content="冷氣維修,家庭電器經銷商,冷氣清洗" />
         <title>建豐電器有限公司</title>
       </Head> */}
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap"
+        />
+      </head>
       <body>
         {/* <SessionProvider> */}
         <ReduxProvider>
-          <header>
-            <nav>
-              <WebsideHeader></WebsideHeader>
-              <NavigationBar></NavigationBar>
-            </nav>
-          </header>
+          <nav>
+            <WebsideHeader></WebsideHeader>
+            <NavigationBar></NavigationBar>
+          </nav>
           <main className="bg-gray-100 w-full flex justify-center">
             {children}
           </main>
@@ -77,6 +71,7 @@ const RootLayout = ({ children, initialState }: ReduxProviderProps) => {
             </p>
           </footer>
           {/* </SessionProvider> */}
+          <UploadState></UploadState>
         </ReduxProvider>
       </body>
     </html>
