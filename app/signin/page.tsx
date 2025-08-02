@@ -140,7 +140,7 @@ const ComponentName: React.FC = () => {
       {message && <div className="mx-auto bg-slate-200 mt-5">{message}</div>}
       <form
         onSubmit={loginhandle}
-        className="flex flex-col w-[60%] mx-auto  bg-gray-300 border-black border-2 rounded-lg px-4 m-4"
+        className="flex flex-col w-full sm:w-[60%] mx-auto  bg-gray-300 border-black border-2 rounded-lg px-4 m-4"
       >
         <label htmlFor="email" className="p-1  mt-3 ">
           信箱:
@@ -179,7 +179,7 @@ const ComponentName: React.FC = () => {
         <div className="flex justify-center">
           <button
             type="button"
-            className="bg-blue-500 rounded-lg  p-1 m-3  w-20 text-center  shadow"
+            className="bg-blue-400  hover:bg-blue-500 rounded-lg  p-1 m-3  w-20 text-center  shadow"
             onClick={() => {
               loginhandle();
             }}
@@ -188,38 +188,41 @@ const ComponentName: React.FC = () => {
           </button>
           <a
             href="/register"
-            className="bg-blue-500 rounded-lg  p-1 m-3  w-20 text-center shadow"
+            className="bg-blue-400  hover:bg-blue-500 rounded-lg  p-1 m-3  w-20 text-center shadow"
           >
             註冊
           </a>
         </div>
-        <div className="flex justify-center items-center"></div>
-        <div className="w-[0%] mx-auto  ">
-          <button
-            onClick={() => signIn("google")}
-            className="rounded-full bg-red-700 p-0 w-full transition-transform duration-100 ease-in-out transform active:scale-98 active:shadow-lg"
-          >
-            <picture>
-              <source
-                srcSet="/photos/google/signin-assets/Web/png@2x/light/web_light_rd_SI@2x.png"
-                media="(min-width: 640px)"
-              />
-              <source
-                srcSet="/photos/google/signin-assets/Web/png@3x/light/web_light_rd_SI@3x.png"
-                media="(min-width: 768px)"
-              />
-              <source
-                srcSet="/photos/google/signin-assets/Web/png@4x/light/web_light_rd_SI@4x.png"
-                media="(min-width: 1024px)"
-              />
+        <div className="flex justify-center items-center">
+          {" "}
+          <div className="w-[80%] sm:w-[50%] mx-auto  ">
+            <button
+              onClick={() => signIn("google")}
+              type="button"
+              className="rounded-full bg-red-700 p-0 w-full transition-transform duration-100 ease-in-out transform active:scale-98 active:shadow-lg"
+            >
+              <picture>
+                <source
+                  srcSet="/photos/google/signin-assets/Web/png@2x/light/web_light_rd_SI@2x.png"
+                  media="(min-width: 640px)"
+                />
+                <source
+                  srcSet="/photos/google/signin-assets/Web/png@3x/light/web_light_rd_SI@3x.png"
+                  media="(min-width: 768px)"
+                />
+                <source
+                  srcSet="/photos/google/signin-assets/Web/png@4x/light/web_light_rd_SI@4x.png"
+                  media="(min-width: 1024px)"
+                />
 
-              <img
-                src="/photos/google/signin-assets/Web/png@1x/light/web_light_rd_SI@1x.png"
-                alt="google登入"
-                style={{ width: "100%", height: "auto" }}
-              />
-            </picture>
-          </button>
+                <img
+                  src="/photos/google/signin-assets/Web/png@1x/light/web_light_rd_SI@1x.png"
+                  alt="google登入"
+                  style={{ width: "100%", height: "auto" }}
+                />
+              </picture>
+            </button>
+          </div>
         </div>
       </form>
     </div>

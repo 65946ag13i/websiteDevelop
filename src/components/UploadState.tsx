@@ -5,7 +5,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
-import Button from "@mui/material/Button";
+
 const UploadState: React.FC<{}> = () => {
   const moveToTop = () => {
     console.log("啟動");

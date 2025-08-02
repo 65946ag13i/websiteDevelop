@@ -4,8 +4,13 @@ import React from "react";
 import WebsideHeader from "@/components/WebsideHeader";
 import NavigationBar from "@/components/NavigationBar";
 import UploadState from "@/components/UploadState";
-import { ReduxProvider } from "@/components/ReduxProvider/ReduxProvider";
 import { ReactNode } from "react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/utils/appRouter/api/auth/auth-config";
+
+import { SessionProvider } from "@/components/SessionProvider/SessionProvider";
+
+import { AllProviders } from "@/components/AllProvider/AllProviders";
 
 export const metadata = {
   title: "建豐電器有限公司",
@@ -22,7 +27,9 @@ interface ReduxProviderProps {
   children: ReactNode;
 }
 
-const RootLayout = ({ children }: ReduxProviderProps) => {
+const RootLayout = async ({ children }: ReduxProviderProps) => {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="zh">
       {/* <Head>
@@ -56,23 +63,24 @@ const RootLayout = ({ children }: ReduxProviderProps) => {
         />
       </head>
       <body>
-        {/* <SessionProvider> */}
-        <ReduxProvider>
-          <nav>
-            <WebsideHeader></WebsideHeader>
-            <NavigationBar></NavigationBar>
-          </nav>
-          <main className="bg-gray-100 w-full flex justify-center">
-            {children}
-          </main>
-          <footer>
-            <p className="bg-blue-300 text-center p-1 text-base">
-              Copyright © 2024
-            </p>
-          </footer>
-          {/* </SessionProvider> */}
-          <UploadState></UploadState>
-        </ReduxProvider>
+        <AllProviders>
+          <SessionProvider session={session}>
+            <nav>
+              <WebsideHeader></WebsideHeader>
+              <NavigationBar></NavigationBar>
+            </nav>
+            <main className="bg-gray-100 w-full flex justify-center">
+              {children}
+            </main>
+            <footer>
+              <p className="bg-blue-300 text-center p-1 text-base">
+                Copyright © 2024
+              </p>
+            </footer>
+
+            <UploadState />
+          </SessionProvider>
+        </AllProviders>
       </body>
     </html>
   );

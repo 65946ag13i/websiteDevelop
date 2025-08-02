@@ -36,7 +36,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     ) {
       return NextResponse.json({ message: "驗證未通過" }, { status: 400 });
     }
-    //信箱驗證
+    //檢測信箱是否註冊過
     const getDataSourse = await initDataSourse();
     const userRepository = await getDataSourse.getRepository(User);
     const userData = await userRepository.findOne({
@@ -44,11 +44,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       where: { email },
     });
     if (userData) {
-      return NextResponse.json({ messsage: "帳號已存在" }, { status: 400 });
+      return NextResponse.json({ message: "帳號已存在" }, { status: 400 });
     }
     //驗整碼驗證
     const setTime = 3600000; //一小時
     const codeDataSoruse = await getDataSourse.getRepository(VerificationCode);
+    //只搜索一小時內的
     const timeStart = new Date();
     const timeEnd = new Date(timeStart.getTime() - setTime);
     const codedata = await codeDataSoruse.findOne({
@@ -59,7 +60,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         code: code,
       },
     });
+    //驗證碼驗證過後註冊帳號
     if (codedata) {
+      //密碼加鹽
       const hashPassword = await bcrypt.hash(password, 10); //加密
       const newUser = new User();
       newUser.name = name;
@@ -74,10 +77,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         );
       }
 
-      userRepository.save(newUser); //儲存資料
-      return NextResponse.json({ messsage: "success" }, { status: 200 });
+      await userRepository.save(newUser); //儲存資料
+      return NextResponse.redirect("/signin");
     } else {
-      return NextResponse.json({ messsage: "帳號已存在" }, { status: 400 });
+      return NextResponse.json({ message: "帳號已存在" }, { status: 400 });
     }
   } catch (e) {
     if (e instanceof Error) {

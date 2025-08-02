@@ -2,10 +2,11 @@ interface imageUpload {
   pictureName: string;
   file: File;
   fileUUID: string;
+  photoNumber: string;
 }
 
 self.onmessage = async function (event) {
-  const { pictureName, file, fileUUID }: imageUpload = event.data;
+  const { pictureName, file, fileUUID, photoNumber }: imageUpload = event.data;
   const maxParallelUpload = 2;
   const chunkSize = 1024 * 1024; //1bytes = 1024 kb  1024kb=1MB
   const totalChunks = Math.ceil(file.size / chunkSize);
@@ -50,11 +51,12 @@ self.onmessage = async function (event) {
     while (retries > 0) {
       try {
         const formdata = new FormData();
-        formdata.append("fileID", fileUUID);
+        formdata.append("fileUUID", fileUUID);
         formdata.append("pictureName", pictureName);
         formdata.append("SliceIndex", SliceIndex.toString());
         formdata.append("chunk", chunk);
-        formdata.append("totalChumks", totalChunks.toString());
+        formdata.append("totalChunks", totalChunks.toString());
+        formdata.append("photoNumber", photoNumber.toString());
         const response = await fetch(`${process.env.WEBSIDE_URL}/api/upload`, {
           method: "POST",
           credentials: "include",

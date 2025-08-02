@@ -20,21 +20,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     success: boolean; // 指定 success 為 boolean
     message: string;
     VerificationCode?: string | null; // 假設 VerificationCode 是可選的字串或 null
-  } = await sendEmailMiddleware("TW", "verification", getMail);
+  } = await sendEmailMiddleware("TW", "verification", getMail); //寄驗證信
   if (!success) {
     console.error(message);
   }
   try {
-    const setTime = 1800000; //30分鐘
+    const setTime = 1800000; //驗證時間30分鐘
     if (success && code) {
       const getDataSourse = await initDataSourse(); //資料庫初始化
+      //儲存使用者信箱驗證碼過期日期 到伺服器儲存 會週期清除
       const codeRepository =
         await getDataSourse.getRepository(VerificationCode);
       const newVerificationCode = new VerificationCode();
       newVerificationCode.code = code;
       newVerificationCode.email = getMail;
-      newVerificationCode.expires_at = new Date(Date.now() + 1800000);
+      newVerificationCode.expires_at = new Date(Date.now() + setTime);
 
+      //資料驗證
       const errors = await validate(newVerificationCode);
       if (errors.length > 0) {
         return NextResponse.json(

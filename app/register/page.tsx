@@ -1,6 +1,7 @@
 "use client";
+import { signOut } from "next-auth/react";
 import React, { useState, useEffect } from "react";
-
+import CooldownButton from "@/components/button/CooldownButton";
 const register: React.FC = () => {
   //輸入窗
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ const register: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
 
   //彈窗
+  // true 綠色,false 紅色
   const [showToastColor, setshowToastColor] = useState(false);
   const [verificationMessage, setverificationMessage] = useState("");
   const [showToast, setshowToast] = useState(false);
@@ -162,6 +164,13 @@ const register: React.FC = () => {
           body: JSON.stringify(result),
         }
       );
+      if (response.ok) {
+        signOut({ callbackUrl: "/signin" });
+      } else {
+        setshowToastColor(false);
+        setverificationMessage("伺服器內部錯誤，請重新送出");
+        setshowToast(true);
+      }
     } else {
       //視窗震動
       // const result = { email, password, code: verification };
@@ -293,15 +302,14 @@ const register: React.FC = () => {
                   setVerification(e.target.value);
                 }}
               />
-              <button
-                type="button"
-                className="px-2 bg-green-400"
-                onClick={() => {
-                  emailAuthentication();
-                }}
-              >
+              {/* <button type="button" className="px-2 bg-green-400">
                 取得信箱驗證碼
-              </button>
+              </button> */}
+              <CooldownButton
+                onResend={emailAuthentication}
+                normalLabel="取得信箱驗證碼"
+                className="px-2 bg-green-400"
+              />
             </div>
 
             <button

@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { IsEmail, Length, Matches } from "class-validator";
 import { oauth2List } from "@/backend/entities/oauth2List";
-
+import { userQuote } from "@/backend/entities/userQuote";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -35,8 +35,8 @@ export class User {
 
   @Column({ type: "varchar", nullable: true })
   @Length(8, 65)
-  @Matches(/(?!.*[\s<>;'"\\])/, {
-    message: "密碼不能包含空白字符、<, >, ;, ', \", 或反斜槓",
+  @Matches(/^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/, {
+    message: "密碼不合規",
   })
   password: string = "";
 
@@ -44,4 +44,7 @@ export class User {
     cascade: true,
   }) //如何放到oatth2儲存
   oauth2List?: oauth2List[]; //oauth2 儲存清單
+
+  @OneToMany(() => userQuote, (userQuote) => userQuote.user) //如何放到oatth2儲存
+  userQuote?: userQuote[]; //oauth2 儲存清單
 }

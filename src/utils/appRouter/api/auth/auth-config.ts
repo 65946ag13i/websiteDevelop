@@ -34,6 +34,7 @@ interface Credentials {
 }
 
 export const authOptions: NextAuthOptions = {
+  //google登入
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -46,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    //內建登入 純英文 自定義登入可使用
     CredentialsProvider({
       id: "login",
       //api導航(navigation)
@@ -65,23 +67,27 @@ export const authOptions: NextAuthOptions = {
           const { email, password } = credentials; //解構
           const getDataSourse = await initDataSourse(); //資料庫初始化
           const userRepository = await getDataSourse.getRepository(User); //取得實體(entity)
+          //資料庫找使用者
           const user = await userRepository.findOne({
             where: { email: email },
             select: ["id", "email", "name", "password"],
-          }); //尋找user
+          });
 
           if (!user || !user.id || !user.email) {
+            console.error("無法找到eamill");
             throw new Error("無法找到eamill");
           }
-
+          //密碼加鹽比對
           const isValidPassword = await bcrypt.compare(password, user.password); //驗證password
           if (isValidPassword) {
             return {
+              //返回使用者資料
               id: user.id?.toString(), // 確保 id 是字符串
               email: user.email,
               name: user.name,
             };
           } else {
+            console.error("密碼錯誤");
             throw new Error("密碼錯誤");
           }
         } catch (error) {
@@ -105,6 +111,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account && account.provider && user && user.email && user.name) {
+        //檢測登入方式 login直接true
         if (account?.provider === "login") {
           return true;
         }
@@ -112,14 +119,14 @@ export const authOptions: NextAuthOptions = {
           if (account?.provider === "google" && user?.email) {
             const DataSourse = await initDataSourse();
             const userRepository = await DataSourse.getRepository(User);
-            //查找重複email
+            //查找email是否已經建立資料
             const existingUser = await userRepository.findOne({
               select: ["email"],
               where: { email: user.email },
             });
-
+            //不存在就建立使用者資料
             if (!existingUser) {
-              //
+              //建立事務失敗就回滾
               const success = await DataSourse.manager.transaction(
                 async (EntityManager) => {
                   if (
@@ -154,8 +161,7 @@ export const authOptions: NextAuthOptions = {
                     if (oauth2errors.length > 0) {
                       return "/signin";
                     }
-                    //驗證錯誤
-
+                    //事務儲存
                     await EntityManager.save(userSave);
                   }
                 }
@@ -168,7 +174,10 @@ export const authOptions: NextAuthOptions = {
             }
           }
         } catch (e) {
+          console.error("----------");
+          console.error("Callback Error");
           console.error(e);
+          console.error("----------");
           return "/signin";
         }
 
@@ -177,6 +186,7 @@ export const authOptions: NextAuthOptions = {
 
       return "/signin";
     },
+    //設定jwt token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -186,6 +196,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    //返回session
     async session({ session, token }) {
       // session.user.id = typeof token.id === "string" ? token.id : ""; //unknow 除非斷言 或類型檢查 才能清除error
       // session.user.name = token.name;
