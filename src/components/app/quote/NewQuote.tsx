@@ -14,7 +14,7 @@ interface uploadFileWithWorker {
   fileUUID: string;
   photoNumber: string;
 }
-
+//* 上傳分片到webWorker
 function uploadFileWithWorker(
   uploadFileWithWorker: uploadFileWithWorker,
   worker: Worker
@@ -48,6 +48,8 @@ function uploadFileWithWorker(
       }
     };
     worker.onerror = () => {
+      console.error("Worker error");
+      dispatch(setUploadState("上傳失敗"));
       reject({ success: false });
     };
   });
@@ -257,7 +259,7 @@ const NewQuote: React.FC = () => {
       //* 驗證表單及圖片數量後啟動上傳
       if (formWordCheck && imageArray.length !== 0) {
         //後端建立表單
-        //todo 記得寫try 地址要改
+
         const contentUpload = await fetch(
           `${process.env.WEBSIDE_URL}/api/quoteUpload/uploadFrom`,
 
@@ -295,8 +297,12 @@ const NewQuote: React.FC = () => {
             }
           }
           dispatch(setUploadState("上傳完成"));
+        } else {
+          console.error("表單上傳失敗,form upload failed");
+          const dispatch = useAppDispatch();
+          dispatch(setUploadState("上傳失敗"));
         }
-        //todo 寫一個else上傳失敗 給upload顯示
+
         //關閉worker
 
         worker.terminate();

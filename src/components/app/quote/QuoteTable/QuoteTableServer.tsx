@@ -1,9 +1,8 @@
 import { getServerQueryClient } from "@/components/ReactQueryProvider/queryClient";
-import QuoteTable from "@/components/app/quote/QuoteTable/QuoteTable";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { searchUserQuote, searchUserQuoteTable } from "./QuoteTableServices";
-
-const QuoteTableServer = ({ children }: { children: React.ReactNode }) => {
+import { searchUserQuoteTable } from "./QuoteTableServices";
+import QuoteFunctionSwitch from "@/components/app/quote/QuoteTable/QuoteFunctionSwitch";
+const QuoteTableServer: React.FC = () => {
   const clientQuery = getServerQueryClient();
   clientQuery.prefetchQuery({
     queryKey: ["post", 1],
@@ -11,7 +10,8 @@ const QuoteTableServer = ({ children }: { children: React.ReactNode }) => {
   });
   return (
     <HydrationBoundary state={dehydrate(clientQuery)}>
-      {/* <QuoteTable /> */}
+      <QuoteFunctionSwitch />
     </HydrationBoundary>
   );
 };
+export default QuoteTableServer;

@@ -1,3 +1,4 @@
+"use client";
 import QuoteTable from "@/components/app/quote/QuoteTable/QuoteTable";
 import UserQuote from "@/components/app/quote/QuoteTable/UserQuote";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ const QuoteFunctionSwitch: React.FC = () => {
   const [userUUID, setUserUUID] = useState("");
   const [shouldFetch, setShouldFetch] = useState(Boolean);
 
+  //~ 給UserQuote使用
   const { data, isLoading, isSuccess } = useQuery({
     queryKey: ["userQuote", userUUID],
     enabled: shouldFetch && !!userUUID,
@@ -18,7 +20,7 @@ const QuoteFunctionSwitch: React.FC = () => {
       setShouldFetch(false); // 得到資料後取消資料獲取
     }
   }, [isSuccess]);
-
+  //~ 給UserQuote使用
   return (
     <>
       {functionSwitch === "QuoteTable" ? (
@@ -38,3 +40,5 @@ const QuoteFunctionSwitch: React.FC = () => {
     </>
   );
 };
+
+export default QuoteFunctionSwitch;

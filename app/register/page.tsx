@@ -156,20 +156,24 @@ const register: React.FC = () => {
       nameRegex.test(name)
     ) {
       const result = { email, password, code: verification, name: name };
-      const response = await fetch(
-        `${process.env.WEBSIDE_URL}/api/register/emailAuthentication`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(result),
+      try {
+        const response = await fetch(
+          `${process.env.WEBSIDE_URL}/api/register/emailAuthentication`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(result),
+          }
+        );
+        if (response.ok) {
+          signOut({ callbackUrl: "/signin" });
+        } else {
+          setshowToastColor(false);
+          setverificationMessage("伺服器內部錯誤，請重新送出");
+          setshowToast(true);
         }
-      );
-      if (response.ok) {
-        signOut({ callbackUrl: "/signin" });
-      } else {
-        setshowToastColor(false);
-        setverificationMessage("伺服器內部錯誤，請重新送出");
-        setshowToast(true);
+      } catch (error) {
+        console.error("register page error on registerOnload function:", error);
       }
     } else {
       //視窗震動

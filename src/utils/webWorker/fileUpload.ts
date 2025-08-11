@@ -11,7 +11,7 @@ self.onmessage = async function (event) {
   const chunkSize = 1024 * 1024; //1bytes = 1024 kb  1024kb=1MB
   const totalChunks = Math.ceil(file.size / chunkSize);
 
-  //分片
+  //* 分片
 
   const chunkQue = []; //併發列隊陣列
   for (let index = 0; index < totalChunks; index++) {
@@ -74,7 +74,7 @@ self.onmessage = async function (event) {
           `分片,${fileUUID},第${SliceIndex}個,第${retries}次,上傳失敗`
         );
         if (retries == 0) {
-          console.log("分片上傳失敗");
+          //+ 分片上傳失敗
           return { success: false, SliceIndex };
         }
       }
@@ -88,6 +88,7 @@ self.onmessage = async function (event) {
     maxParallelUpload: number;
   }
 
+  //* 併發上傳，function異步代碼，不加trycatch
   const concurrently = async ({
     chunkQue,
     maxParallelUpload,
@@ -125,7 +126,7 @@ self.onmessage = async function (event) {
     return results;
   };
 
-  //併發結果確認
+  //* 併發結果確認
   try {
     const input: concurrently = { chunkQue, maxParallelUpload };
 
@@ -145,10 +146,18 @@ self.onmessage = async function (event) {
         progress: "",
       });
     }
-  } catch (error) {
+  } catch (e) {
+    const errorMessage = e instanceof ErrorEvent ? e.message : String(e);
     self.postMessage({
       success: "failure",
       progress: "",
+      message: errorMessage,
     });
   }
+};
+
+self.onerror = (e: Event | string) => {
+  const errorMessage = e instanceof ErrorEvent ? e.message : String(e);
+  self.postMessage({ type: "uncaught-error", error: errorMessage });
+  return true;
 };

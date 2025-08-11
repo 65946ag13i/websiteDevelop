@@ -5,20 +5,17 @@ import LinearProgress from "@mui/material/LinearProgress";
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
+import { useSession } from "next-auth/react";
 
 const UploadState: React.FC<{}> = () => {
   const moveToTop = () => {
-    console.log("啟動");
+    console.log("move to top");
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   };
-
-  // const fileTotalCount = 123;
-  // const numberOfCurrentFiles = 123;
-  // const fileUploadPercentage = 123;
-  // const uploadState = 123;
+  const { data, status } = useSession();
 
   const {
     fileTotalCount,
@@ -29,7 +26,7 @@ const UploadState: React.FC<{}> = () => {
 
   const [checkBoxOpen, setCheckBoxOpen] = useState<Boolean>(false);
   const [modalOpen, setModalOpen] = useState<Boolean>(false);
-  const [uploadBoxOpen, setUploadBoxOpen] = useState<Boolean>(true);
+  const [uploadBoxOpen, setUploadBoxOpen] = useState<Boolean>(false);
   return (
     <>
       {/* 按鈕功能 */}
@@ -37,9 +34,12 @@ const UploadState: React.FC<{}> = () => {
         <button className="" onClick={() => moveToTop()}>
           <AiOutlineVerticalAlignTop className="w-full  h-full" />
         </button>
-        <button onClick={() => setUploadBoxOpen(true)}>
-          <BsCloudUpload className="w-full h-full" />
-        </button>
+
+        {"unauthenticated" === status ? null : (
+          <button onClick={() => setUploadBoxOpen(true)}>
+            <BsCloudUpload className="w-full h-full" />
+          </button>
+        )}
       </div>
       <div className=" fixed right-0 bottom-0 flex flex-col w-[40%] sm:w-[25%] md:w-[20%] ">
         {/* <button className="w-full h-[100%]">
@@ -87,7 +87,9 @@ const UploadState: React.FC<{}> = () => {
                 )}
               </div>
 
-              {/*上傳完成、失敗確認窗口 覆蓋上面窗口*/}
+              {/* 
+               //~ 上傳完成、失敗確認窗口 覆蓋上面窗口
+              */}
               <div
                 data-modal="modalBackground"
                 className={`absolute inset-0 ${uploadState === "上傳完成" || uploadState === "上傳失敗" ? "bg-white  border-black rounded-tl-lg border-t-2 border-l-2" : "h-0"}  w-full flex flex-col justify-center items-center overflow-hidden`}

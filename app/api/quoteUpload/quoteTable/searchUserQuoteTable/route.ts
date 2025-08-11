@@ -59,7 +59,10 @@ export async function GET(request: NextRequest) {
     console.log("-----------");
     console.log("count", count);
     console.log("-----------");
-    return NextResponse.json({ data: result, total: count }, { status: 200 });
+    return NextResponse.json(
+      { data: result, totalCount: count },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error in GET request:", error);
     return NextResponse.json(

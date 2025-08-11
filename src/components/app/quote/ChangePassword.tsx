@@ -15,6 +15,8 @@ const ChangePassword: React.FC = () => {
   //* 確認密碼
   const [passwordIsVailad, setPasswordIsVailad] = useState<boolean>(true);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+
+  //~ 密碼驗證
   const passwordRegexCheck = () => {
     const passwordRegex =
       /^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/;
@@ -66,11 +68,13 @@ const ChangePassword: React.FC = () => {
       clearTimeout(passworVailadTimer);
     };
   }, [passwordIsVailad]);
+  //~ 密碼驗證
 
+  //~ 密碼相同確認
   //* 密碼相同確認
-
   const [passwordIsSame, setPasswordIsSame] = useState<boolean>(false);
 
+  //* 密碼相同確認
   const checkPasswordFC = () => {
     if (newPassword === checkPassword) {
       setPasswordIsSame(false);
@@ -78,6 +82,7 @@ const ChangePassword: React.FC = () => {
       setPasswordIsSame(true);
     }
   };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       checkPasswordFC();
@@ -87,7 +92,9 @@ const ChangePassword: React.FC = () => {
       clearTimeout(timer);
     };
   }, [checkPassword]);
+  //~ 密碼相同確認
 
+  //* 提交表單
   const submitTheForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const passwordRegex =
@@ -97,24 +104,37 @@ const ChangePassword: React.FC = () => {
       passwordIsVailad &&
       passwordRegex.test(currentPassword)
     ) {
-      const passwordData = { currentPassword, newPassword };
-      const result = await fetch(
-        `${process.env.WEBSIDE_URL}/api/quoteUpload/changePassword`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(passwordData),
-        }
-      );
+      try {
+        const passwordData = { currentPassword, newPassword };
 
-      if (result.ok) {
-        signOut({ callbackUrl: "/signin" });
-      } else {
-        setSeverMessage("伺服器發生錯誤，請重新上傳");
+        const result = await fetch(
+          `${process.env.WEBSIDE_URL}/api/quoteUpload/changePassword`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(passwordData),
+          }
+        );
+
+        if (result.ok) {
+          signOut({ callbackUrl: "/signin" });
+        } else {
+          setSeverMessage("伺服器發生錯誤，請重新上傳");
+        }
+      } catch (error) {
+        console.error(
+          "quote change password page error on submitTheForm function:",
+          error
+        );
       }
+    } else {
+      setPasswordCheck(true);
     }
   };
+
+  const [passwordCheck, setPasswordCheck] = useState<Boolean>(false);
+
   return (
     <div>
       {severMessage ? severMessage : null}
@@ -150,6 +170,11 @@ const ChangePassword: React.FC = () => {
         </label>
         {passwordIsSame ? (
           <div className=" text-red-600 ">新密碼和確認新密碼不相同</div>
+        ) : null}
+        {passwordCheck ? (
+          <div className=" text-red-600 ">
+            請重新確認舊密碼和密碼是否符合需求
+          </div>
         ) : null}
         <button type="submit">送出</button>
       </form>

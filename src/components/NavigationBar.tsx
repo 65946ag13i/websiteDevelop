@@ -15,8 +15,10 @@ const NavigationBar: React.FC = () => {
       // setIsFixed(window.scrollY > 100);
     }
     const handleScroll = () => {
-      console.log("window:" + window.scrollY);
-      console.log("sticky:" + sticky);
+      //~ 檢查滾動位置
+      // console.log("window:" + window.scrollY);
+      // console.log("sticky:" + sticky);
+      //~ 檢查滾動位置
       if (window.scrollY > sticky) {
         setIsFixed(true);
       } else {

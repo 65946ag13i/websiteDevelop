@@ -2,10 +2,9 @@
 //刷新table
 
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PaginationBtuuon from "@/components/public/PaginationButton";
-import { searchUserQuote, searchUserQuoteTable } from "./QuoteTableServices";
+import { searchUserQuoteTable } from "./QuoteTableServices";
 interface Order {
   id: number;
   date: string;
@@ -28,8 +27,7 @@ const QuoteTable = ({
   //   return <div>尚未登入</div>;
   // }
 
-  //* 查詢報價單資料
-
+  //* 查詢指定報價單
   const search = async (userQuoteUUId: string) => {
     //+ 啟動useQury 撈資料
     setUserUUID(userQuoteUUId); //+ 傳送UUD給後端查詢
@@ -39,18 +37,41 @@ const QuoteTable = ({
   };
 
   const [page, setPage] = useState(1);
-  const [maxPage, setMaxPage] = useState<Number | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [userData, setUserData] = useState<Order[]>([]);
 
-  const { data } = useQuery({
+  interface Order {
+    id: number;
+    createdAt: string;
+    state: number;
+    UUID: string;
+  }
+  interface SearchResponse {
+    data: Order[];
+    totalCount: number;
+  }
+
+  const { data, isLoading, isError } = useQuery<SearchResponse>({
     queryKey: ["order", page],
-    queryFn: () => search(page.toString()),
+    queryFn: () => searchUserQuoteTable(page.toString()),
   });
 
-  if (!userData || userData.length < 1) {
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (
+    isError ||
+    !data ||
+    !data.data ||
+    data.data.length < 1 ||
+    !data.totalCount
+  ) {
     return <div>查無資料</div>;
   }
 
+  setUserData(data.data);
+  setTotalCount(data.totalCount);
   return (
     <div>
       <table>
@@ -59,17 +80,17 @@ const QuoteTable = ({
             <td>編號</td>
             <td>建立日期</td>
             <td>處理狀態</td>
-            <td>報價查詢</td>
+            <td>報價單查詢</td>
           </tr>
         </thead>
         <tbody>
           {userData.map((order) => (
             <tr>
               <td>{order.id}</td>
-              <td>{order.date}</td>
+              <td>{new Date(order.createdAt).toLocaleString()}</td>
               <td>{order.state}</td>
               <td>
-                <button onClick={() => search(order.id.toString())}>
+                <button onClick={() => search(order.UUID.toString())}>
                   查找
                 </button>
               </td>
@@ -77,7 +98,7 @@ const QuoteTable = ({
           ))}
         </tbody>
       </table>
-      <PaginationBtuuon page={page} maxDataLength={page} />
+      <PaginationBtuuon page={page} totalCount={totalCount} setPage={setPage} />
     </div>
   );
 };

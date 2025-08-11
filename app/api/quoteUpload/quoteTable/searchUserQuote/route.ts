@@ -9,7 +9,6 @@ import {
   sanitizeInput,
   readDirectoryImages,
 } from "@/utils/module-utils/fsUtility/fsUtil";
-import { get } from "http";
 
 export async function GET(request: NextRequest) {
   try {
