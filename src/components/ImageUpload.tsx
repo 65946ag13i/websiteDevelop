@@ -85,7 +85,7 @@ async function AddPhoto(fileArray: FileList) {
           //-----image---
         };
         //[[null, null], [string[], string[]]]
-        ////執行new FileReader
+        //執行new FileReader
         photofile.readAsDataURL(file);
       }
     });

@@ -7,7 +7,7 @@ export const searchUserQuoteTable = async (page: string) => {
   params.append("page", page);
   try {
     const result = await fetch(
-      `${process.env.WEBSIDE_URL}/api/quoteTable/searchUserQuoteTable?${params.toString()}`,
+      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuoteTable?${params.toString()}`,
       {
         method: "GET",
         credentials: "include",
@@ -35,7 +35,7 @@ export const searchUserQuote = async (quoteUUID: string) => {
   //* 返回使用者文字報價單
   try {
     const result = await fetch(
-      `${process.env.WEBSIDE_URL}/api/quoteTable/searchUserQuote?${params.toString()}`,
+      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuote?${params.toString()}`,
       {
         method: "GET",
         credentials: "include",

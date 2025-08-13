@@ -1,7 +1,6 @@
 import ImageCarouselServer from "@/components/ImageCarouselServer";
-import React from "react";
 
-const Example: React.FC<{}> = () => {
+const Example: React.FC = () => {
   return (
     <div>
       <ImageCarouselServer />

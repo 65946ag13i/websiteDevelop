@@ -4,10 +4,12 @@ import React from "react";
 const repairPage: React.FC = () => {
   return (
     <>
-      <div className="flex flex-col items-center  w-[70%] mx-auto">
+      <div className="flex flex-col items-center  w-[70%] mx-auto bg-white">
         <div className=" w-full">
-          <div className=" text-lg text-center w-full mx-auto">關於維修</div>
-          <div className="block text-left max-w-md mx-auto">
+          <div className="text-xl text-center w-full border-b-2 border-black p-3 bg-[#B8E5AB] ">
+            關於維修
+          </div>
+          <div className="block text-left max-w-md mx-auto p-1">
             由於現在的電器都是微電腦，幾乎都要找公司才能修理
             <br />
             只有冷氣相關才能處理，包含漏水、不會冷...等問題才能處理
@@ -20,16 +22,21 @@ const repairPage: React.FC = () => {
               <li>我們維修處理的沒有原廠保固</li>
               <li>有其他故障原因，原廠更好處理問題</li>
             </ol>
-            <div>機器超過八年以上都不建議維修</div>
-            <div>容易出現修好一個零件壞另一個</div>
+            <div className="text-red-600">
+              機器超過八年以上都不建議維修，容易出現修好一個壞另一個
+            </div>
           </div>
         </div>
 
         <div className=" w-full text-center">
-          <div className="text-lg mx-auto">以下提供各品牌服務站及線上報修</div>
-          <div className=" w-full text-center">
+          <div className="text-xl text-center w-full border-y-2 border-black p-3 bg-[#B8E5AB] ">
+            以下提供各品牌服務站及線上報修
+          </div>
+          <div className=" w-full text-center [&>*:nth-child(even)]:bg-gray-200 ">
             <div>
-              <div>國際牌服務站</div>
+              <div className="border-gray-900 border-b-2 mb-2 bg-webGreenToBrown-800">
+                國際牌
+              </div>
               <div>
                 <a
                   href="https://pmst.panasonic.com.tw/FAQ/Article/1791"
@@ -52,7 +59,9 @@ const repairPage: React.FC = () => {
               </div>
             </div>
             <div>
-              <div>日立服務站</div>
+              <div className="border-gray-900 border-y-2 mb-2 bg-webGreenToBrown-800">
+                日立
+              </div>
 
               <div>
                 <a
@@ -74,9 +83,14 @@ const repairPage: React.FC = () => {
                   日立家電線上報修
                 </a>
               </div>
+              <div className="text-red-600 text-xl pb-2">
+                日立家電和日立冷氣是不同公司
+              </div>
             </div>
-            <div>
-              <div>聲寶服務站</div>
+            <div className="border-gray-900 border-t-2">
+              <div className="border-gray-900 border-b-2 mb-2 bg-webGreenToBrown-800">
+                聲寶
+              </div>
               <a
                 href="https://www.hitachiaircon.com/tw/service/maintain"
                 className="text-blue-500 underline  hover:text-red-400 active:text-red-500"
@@ -86,8 +100,10 @@ const repairPage: React.FC = () => {
                 聲寶線上維修及服務據點
               </a>
             </div>
-            <div>
-              <div>華菱服務站</div>
+            <div className="mt-2 pb-2">
+              <div className="border-gray-900 border-y-2 mb-2 bg-webGreenToBrown-800">
+                華菱
+              </div>
               <div>
                 <a
                   href="https://twhawrin.com/%e5%85%a8%e5%9c%8b%e6%9c%8d%e5%8b%99%e6%93%9a%e9%bb%9e/"

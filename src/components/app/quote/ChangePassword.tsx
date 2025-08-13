@@ -108,7 +108,7 @@ const ChangePassword: React.FC = () => {
         const passwordData = { currentPassword, newPassword };
 
         const result = await fetch(
-          `${process.env.WEBSIDE_URL}/api/quoteUpload/changePassword`,
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/changePassword`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

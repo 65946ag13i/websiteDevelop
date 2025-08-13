@@ -57,11 +57,14 @@ self.onmessage = async function (event) {
         formdata.append("chunk", chunk);
         formdata.append("totalChunks", totalChunks.toString());
         formdata.append("photoNumber", photoNumber.toString());
-        const response = await fetch(`${process.env.WEBSIDE_URL}/api/upload`, {
-          method: "POST",
-          credentials: "include",
-          body: formdata,
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/upload`,
+          {
+            method: "POST",
+            credentials: "include",
+            body: formdata,
+          }
+        );
 
         if (!response.ok) {
           return { success: false, SliceIndex };

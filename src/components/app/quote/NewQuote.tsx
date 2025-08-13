@@ -261,7 +261,7 @@ const NewQuote: React.FC = () => {
         //後端建立表單
 
         const contentUpload = await fetch(
-          `${process.env.WEBSIDE_URL}/api/quoteUpload/uploadFrom`,
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/uploadFrom`,
 
           {
             method: "POST",

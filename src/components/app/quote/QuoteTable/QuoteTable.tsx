@@ -2,7 +2,7 @@
 //刷新table
 
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import PaginationBtuuon from "@/components/public/PaginationButton";
 import { searchUserQuoteTable } from "./QuoteTableServices";
 interface Order {

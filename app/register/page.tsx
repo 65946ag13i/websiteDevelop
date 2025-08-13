@@ -120,7 +120,7 @@ const register: React.FC = () => {
   //寄出驗證信
   const emailAuthentication = async () => {
     const response = await fetch(
-      `${process.env.WEBSIDE_URL}/api/register/emailAuthentication`,
+      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register/emailAuthentication`,
       {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
@@ -158,7 +158,7 @@ const register: React.FC = () => {
       const result = { email, password, code: verification, name: name };
       try {
         const response = await fetch(
-          `${process.env.WEBSIDE_URL}/api/register/emailAuthentication`,
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register/emailAuthentication`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
