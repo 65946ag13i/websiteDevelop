@@ -88,6 +88,7 @@ export default async function sendEmailMiddleware(
   } catch (e) {
     if (e instanceof Error) {
       console.error("Error caught:", e.message);
+      console.error(e);
       return {
         success: false,
         message: `驗證信寄出失敗`,

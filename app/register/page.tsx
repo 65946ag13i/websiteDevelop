@@ -3,34 +3,40 @@ import { signOut } from "next-auth/react";
 import React, { useState, useEffect } from "react";
 import CooldownButton from "@/components/button/CooldownButton";
 const register: React.FC = () => {
-  //輸入窗
+  //*輸入窗
   const [email, setEmail] = useState("");
   const [password, setpassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [verification, setVerification] = useState("");
   const [name, setname] = useState("");
 
-  //信箱密碼錯誤檢測
+  //*信箱密碼錯誤檢測
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] =
+    useState<boolean>(false);
 
-  //彈窗
-  // true 綠色,false 紅色
+  //*彈窗
+  //* true 綠色,false 紅色
   const [showToastColor, setshowToastColor] = useState(false);
   const [verificationMessage, setverificationMessage] = useState("");
   const [showToast, setshowToast] = useState(false);
   //改善SSR渲染問題
   const [isClient, setIsClient] = useState(false);
 
-  //設置animation
+  //*設置animation
   const [emailAnimation, setemailAnimation] = useState(false);
   const [passwordAnimation, setpasswordAnimation] = useState(false);
+  const [confirmPasswordAnimation, setConfirmPasswordAnimation] =
+    useState(false);
   const [codeAnimation, setcodeAnimation] = useState(false);
   const [nameAnimation, setnameAnimation] = useState(false);
+
   useEffect(() => {
     setIsClient(true); // 標記為客戶端
   }, []);
 
-  //emaill 驗證
+  //*emaill 驗證
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       let emailError = "";
@@ -61,7 +67,7 @@ const register: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [email]);
 
-  //password 驗證
+  //*password 驗證
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       let passwordError = "";
@@ -108,16 +114,29 @@ const register: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [password]);
 
-  //驗證信後端寄出彈窗
+  //* 密碼確認 setConfirmPassword confirmPassword
   useEffect(() => {
-    setTimeout(() => {
-      if (showToast) {
-        setshowToast(false);
+    const confirmTimeout = setTimeout(() => {
+      if (password === confirmPassword) {
+        setConfirmPasswordError(false);
+      } else {
+        setConfirmPasswordError(true);
       }
-    }, 2000);
-  }, [showToast]);
+    }, 500);
 
-  //寄出驗證信
+    return () => clearTimeout(confirmTimeout);
+  }, [password, confirmPassword]);
+
+  //*驗證信後端寄出彈窗
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     if (showToast) {
+  //       setshowToast(false);
+  //     }
+  //   }, 4000);
+  // }, [showToast]);
+
+  //*寄出驗證信
   const emailAuthentication = async () => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register/emailAuthentication`,
@@ -139,7 +158,22 @@ const register: React.FC = () => {
     }
   };
 
-  //註冊送出
+  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
+  useEffect(() => {
+    const mailtimer = setTimeout(() => {
+      const emailRegex =
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?!.*[<>&'"])[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (emailRegex.test(email)) {
+        setButtonDisabled(false);
+      } else {
+        setButtonDisabled(true);
+      }
+    }, 800);
+
+    return () => clearTimeout(mailtimer);
+  }, [email]);
+
+  //*註冊送出
   const registerOnload = async () => {
     const emailRegex =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?!.*[<>&'"])[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -153,12 +187,13 @@ const register: React.FC = () => {
       emailRegex.test(email) &&
       passwordRegex.test(password) &&
       codeRegex.test(verification) &&
-      nameRegex.test(name)
+      nameRegex.test(name) &&
+      !confirmPasswordError
     ) {
       const result = { email, password, code: verification, name: name };
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register/emailAuthentication`,
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -168,6 +203,8 @@ const register: React.FC = () => {
         if (response.ok) {
           signOut({ callbackUrl: "/signin" });
         } else {
+          const serverResponse = await response.json();
+          console.error(serverResponse.message);
           setshowToastColor(false);
           setverificationMessage("伺服器內部錯誤，請重新送出");
           setshowToast(true);
@@ -207,21 +244,47 @@ const register: React.FC = () => {
           setnameAnimation(false);
         }
       }
+      if (password === confirmPassword && password && confirmPassword) {
+        setConfirmPasswordAnimation(false);
+      } else {
+        setConfirmPasswordAnimation(true);
+      }
     }
   };
 
   //關閉視窗震動 動畫啟動在送出表單
+  const openbutton = () => {
+    setshowToast(true);
+  };
+
+  const closebutton = () => {
+    setshowToast(false);
+  };
 
   return (
-    <div className="flex items-center  mx-auto sm:w-[80%] m-5 ">
-      {/*驗證碼提示窗*/}
-      {showToast && (
+    <div className="flex flex-col items-center  mx-auto sm:w-[80%] m-5 ">
+      {/*驗證碼提示窗 showToast*/}
+      {/* ` 
+          ${showToastColor ? "bg-green-500" : "bg-red-500"}
+          rounded-lg px-3 py-2 
+          border-2 
+          ${showToast ? "toast-show" : "toast"}
+        ` */}
+      <button onClick={openbutton}>wefwefewf</button>
+      <button onClick={closebutton}>wefwefewf</button>
+      {
         <div
-          className={`fixed  top-16 left-1/2 transform -translate-x-1/2 translate-y-5 ${showToastColor ? " bg-green-500" : "bg-red-500"}rounded-lg p-1  transition-all op duration-150 ${showToast ? "opacity-100 translate-y-0" : ""}`}
+          className={` 
+         bg-red-500
+           transition-all duration-1000 ease-in-out 
+           transform origin-top
+                      overflow-hidden h-0
+          `}
         >
-          {verificationMessage}
+          {/* {verificationMessage} */}
+          123
         </div>
-      )}
+      }
       {isClient && (
         <div className="mx-auto my-4 w-[90%] p-3 rounded-lg border-black border-2 bg-gray-300">
           <form onSubmit={registerOnload} className="flex flex-col">
@@ -257,7 +320,6 @@ const register: React.FC = () => {
                 type="password"
                 id="password-input"
                 value={password}
-                autoComplete="current-password"
                 placeholder="請輸入密碼"
                 className="grow ml-2 focus:outline-none "
                 onChange={(e) => {
@@ -266,10 +328,30 @@ const register: React.FC = () => {
               />
             </label>
             {/*信箱錯誤資訊提示窗*/}
-            {passwordError && (
+            {passwordError ? (
               <div className=" mx-auto text-red-500">{passwordError}</div>
-            )}
+            ) : null}
 
+            <label
+              htmlFor="password-input"
+              className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${confirmPasswordAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+              onAnimationEnd={() => setConfirmPasswordAnimation(false)}
+            >
+              密碼確認:
+              <input
+                type="password"
+                id="confirm-password-input"
+                value={confirmPassword}
+                placeholder="請輸入密碼"
+                className="grow ml-2 focus:outline-none "
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                }}
+              />
+            </label>
+            {confirmPasswordError && (
+              <div className=" mx-auto text-red-500">密碼確認和密碼不相符</div>
+            )}
             <div>
               <label
                 htmlFor="name-input"
@@ -313,14 +395,13 @@ const register: React.FC = () => {
                 onResend={emailAuthentication}
                 normalLabel="取得信箱驗證碼"
                 className="px-2 bg-green-400"
+                controlDisabled={[buttonDisabled, "信箱驗證失敗"]}
               />
             </div>
 
             <button
               type="button"
-              onClick={() => {
-                registerOnload();
-              }}
+              onClick={registerOnload}
               className="flex justify-center bg-green-400 rounded-lg mx-auto w-16 mt-1 shadow"
             >
               送出

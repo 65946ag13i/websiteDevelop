@@ -50,6 +50,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   } catch (e) {
     if (e instanceof Error) {
+      console.error("server error in emailAuthentication");
+      console.error(e);
       console.error("Error caught:", e.message);
       return NextResponse.json({ message: "伺服器發生錯誤" }, { status: 500 });
     } else {

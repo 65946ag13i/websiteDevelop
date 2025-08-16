@@ -5,6 +5,7 @@ import { DataSource } from "typeorm";
 import { User } from "./entities/User";
 import { oauth2List } from "./entities/oauth2List";
 import { VerificationCode } from "./entities/verification_codes";
+import { userQuote } from "@/backend/entities/userQuote";
 // import path from "path";
 // import { fileURLToPath } from "url";
 // import { dirname } from "path";
@@ -24,7 +25,7 @@ const dataSource = new DataSource({
   database: "webside", // 你的資料庫名稱
   synchronize: true, // 自動同步數據庫表結構 (生產環境中建議設置為 false)
   logging: ["error"], // 啟用查詢日誌
-  entities: [User, oauth2List, VerificationCode], // 實體列表
+  entities: [User, oauth2List, VerificationCode, userQuote], // 實體列表
   migrations: ["src/migrations/*.ts"], // 遷移文件路徑
   subscribers: [],
   extra: {

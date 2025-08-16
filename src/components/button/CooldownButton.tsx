@@ -6,14 +6,16 @@ interface CountdownButtonProps {
   CountdownLabel?: string;
   className?: string;
   initialCount?: number;
+  controlDisabled?: [boolean, string];
 }
 
 const CooldownButton: React.FC<CountdownButtonProps> = ({
   onResend,
   normalLabel = "送出",
-  CountdownLabel = "還需等待:",
+  CountdownLabel = "還需等待",
   className = "",
   initialCount = 60,
+  controlDisabled = [false, "父元件控制按鈕禁用"],
 }) => {
   const [count, setCount] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -42,10 +44,23 @@ const CooldownButton: React.FC<CountdownButtonProps> = ({
     onResend(); // 執行外部傳入的 resend 函數（例如發送驗證碼）
   };
 
-  const buttonText = isActive ? `${CountdownLabel} (${count})` : normalLabel;
+  const buttonText =
+    controlDisabled[0] == true
+      ? controlDisabled[1]
+      : isActive
+        ? `${CountdownLabel}: (${count})`
+        : normalLabel;
+
+  const buttonDiabled =
+    controlDisabled[0] == true ? true : isActive ? true : false;
 
   return (
-    <button onClick={handleClick} disabled={isActive} className={className}>
+    <button
+      onClick={handleClick}
+      disabled={buttonDiabled}
+      className={className}
+      type="button"
+    >
       {buttonText}
     </button>
   );

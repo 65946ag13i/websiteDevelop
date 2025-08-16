@@ -47,7 +47,7 @@ export class userQuote {
 
   @Column({
     type: "enum",
-    enum: ["Fulfilled", "Unfulfilled "],
+    enum: ["Fulfilled", "Unfulfilled"],
     default: "Unfulfilled",
   })
   @IsIn(["Fulfilled", "Unfulfilled"])

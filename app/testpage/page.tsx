@@ -1,20 +1,21 @@
-import React from "react";
+"use client"; // components/ToastTest.tsx
+import { useState, useRef, useEffect } from "react";
 
-const VerificationCodeInput = () => {
-  return (
-    <div className="flex items-center border rounded-md overflow-hidden">
-      {/* Input 欄位 */}
-      <input
-        type="text"
-        placeholder="請輸入驗證碼"
-        className=" px-4 py-2 outline-none border-none"
-      />
-      {/* 按鈕 */}
-      <button className="px-6 py-2 bg-blue-500 text-white font-medium hover:bg-blue-600 transition duration-300">
-        獲取
-      </button>
-    </div>
-  );
-};
+export default function ToastTest() {
+  const [show, setShow] = useState(false);
+  const toastRef = useRef<HTMLDivElement>(null);
 
-export default VerificationCodeInput;
+  const toggle = () => {
+    setShow(!show);
+  };
+
+  // 強制瀏覽器在 show 變化時觸發 reflow
+  useEffect(() => {
+    if (show && toastRef.current) {
+      // 強制 layout 計算，確保動畫從 scaleY(0) 開始
+      toastRef.current.getBoundingClientRect();
+    }
+  }, [show]);
+
+  return <div className="scale-y-0">Test</div>;
+}

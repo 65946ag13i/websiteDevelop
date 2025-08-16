@@ -15,9 +15,10 @@ interface loginVaild {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    //~ 驗證資料規格
     const { email, password, code, name }: loginVaild = await req.json();
-
     if (!email || !password || !code || !name) {
+      console.error("資料沒有正確填寫");
       return NextResponse.json({ error: "資料沒有正確填寫" }, { status: 400 });
     }
 
@@ -34,9 +35,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       !codeRegex.test(code) ||
       !nameRegex.test(name)
     ) {
+      console.error("驗證未通過");
       return NextResponse.json({ message: "驗證未通過" }, { status: 400 });
     }
-    //檢測信箱是否註冊過
+    //~ 驗證資料規格
+
+    //~檢測信箱是否已註冊過
     const getDataSourse = await initDataSourse();
     const userRepository = await getDataSourse.getRepository(User);
     const userData = await userRepository.findOne({
@@ -44,9 +48,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       where: { email },
     });
     if (userData) {
+      console.error("帳號已存在");
+      console.error(userData);
       return NextResponse.json({ message: "帳號已存在" }, { status: 400 });
     }
-    //驗整碼驗證
+    //~檢測信箱是否已註冊過
+
+    //~驗整碼驗證
     const setTime = 3600000; //一小時
     const codeDataSoruse = await getDataSourse.getRepository(VerificationCode);
     //只搜索一小時內的
@@ -60,7 +68,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         code: code,
       },
     });
-    //驗證碼驗證過後註冊帳號
+    //~驗整碼驗證
+
+    //~驗證碼驗證過後註冊帳號
     if (codedata) {
       //密碼加鹽
       const hashPassword = await bcrypt.hash(password, 10); //加密
@@ -71,16 +81,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       const errors = await validate(newUser); //驗證資料
       if (errors.length > 0) {
-        return NextResponse.json(
-          { message: "驗證信寄出失敗" },
-          { status: 400 }
-        );
+        console.error("驗證資料失敗:" + email);
+        console.dir(errors, { depth: null });
+        return NextResponse.json({ message: "驗證資料失敗" }, { status: 400 });
       }
 
       await userRepository.save(newUser); //儲存資料
       return NextResponse.redirect("/signin");
+      //~驗證碼驗證過後註冊帳號
     } else {
-      return NextResponse.json({ message: "帳號已存在" }, { status: 400 });
+      console.error("驗證碼驗證錯誤" + email);
+      return NextResponse.json({ message: "驗證碼驗證錯誤" }, { status: 400 });
     }
   } catch (e) {
     if (e instanceof Error) {

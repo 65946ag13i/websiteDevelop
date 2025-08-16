@@ -76,7 +76,7 @@ const ChangePassword: React.FC = () => {
 
   //* 密碼相同確認
   const checkPasswordFC = () => {
-    if (newPassword === checkPassword) {
+    if (newPassword === checkPassword && newPassword && checkPassword) {
       setPasswordIsSame(false);
     } else {
       setPasswordIsSame(true);
