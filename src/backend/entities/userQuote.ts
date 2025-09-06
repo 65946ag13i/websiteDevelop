@@ -5,18 +5,21 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from "typeorm";
 import {
   ArrayNotEmpty,
   IsArray,
   IsIn,
+  IsNotEmpty,
+  IsNumber,
   IsString,
   IsUUID,
   MaxLength,
   MinLength,
 } from "class-validator";
 import { User } from "@/backend/entities/User";
-
+// import type { User as userID } from "@/backend/entities/User";
 @Entity()
 export class userQuote {
   @PrimaryGeneratedColumn()
@@ -25,6 +28,7 @@ export class userQuote {
 
   @Column("uuid") //+ 儲存一般字串
   @IsUUID("4", { message: "必須是 UUID version 4 格式" })
+  @IsNotEmpty()
   UUID: string = "";
 
   @Column("text", { array: true }) // 儲存 string[]
@@ -43,6 +47,7 @@ export class userQuote {
   @MaxLength(300)
   @MinLength(10)
   @IsString()
+  @IsNotEmpty()
   remarks: string = "";
 
   @Column({
@@ -51,11 +56,17 @@ export class userQuote {
     default: "Unfulfilled",
   })
   @IsIn(["Fulfilled", "Unfulfilled"])
-  state: string = "";
+  state: string = "Unfulfilled";
 
   @CreateDateColumn()
   createdAt!: Date;
 
+  @Column()
+  @IsNotEmpty()
+  @IsNumber()
+  userid!: number;
+
   @ManyToOne(() => User, (user) => user.userQuote) //+  放到user的userQuote
+  @JoinColumn({ name: "userid" })
   user!: Promise<User>;
 }

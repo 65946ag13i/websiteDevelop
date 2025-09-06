@@ -16,7 +16,17 @@ export default {
 
     return config;
   },
-
+  images: {
+    domains: ["localhost"], // 添加localhost到允许的主机名
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/api/**",
+      },
+    ],
+  },
   // 启用 React 严格模式
   reactStrictMode: true,
   eslint: {

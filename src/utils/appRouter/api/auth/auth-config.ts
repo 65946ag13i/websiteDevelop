@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+
     //內建登入 純英文 自定義登入可使用
     CredentialsProvider({
       id: "login",
@@ -103,11 +104,11 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  pages: {
-    signIn: "/signin", // 指定自定义的登录页面
-    error: "/auth/error",
-  },
-  session: { strategy: "jwt" },
+  // pages: {
+  //   signIn: "/signin", // 指定自定义的登录页面
+  //   error: "/signin",
+  // },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account && account.provider && user && user.email && user.name) {
@@ -121,10 +122,11 @@ export const authOptions: NextAuthOptions = {
             const userRepository = await DataSourse.getRepository(User);
             //查找email是否已經建立資料
             const existingUser = await userRepository.findOne({
-              select: ["email"],
               where: { email: user.email },
             });
             //不存在就建立使用者資料
+            console.log("使用者存在?:");
+            console.dir(existingUser, { depth: null });
             if (!existingUser) {
               //建立事務失敗就回滾
               const success = await DataSourse.manager.transaction(
@@ -154,45 +156,60 @@ export const authOptions: NextAuthOptions = {
                         ["email", "name"].includes(error.property)
                       );
                       if (filiterUserErrors.length > 0) {
-                        return "/signin";
+                        console.log("filiterUserErrors?:");
+                        console.dir(filiterUserErrors, { depth: null });
+                        return false;
                       }
                     }
                     const oauth2errors = await validate(useroauth);
                     if (oauth2errors.length > 0) {
-                      return "/signin";
+                      console.log("oauth2errors?:");
+                      console.dir(oauth2errors, { depth: null });
+                      return false;
                     }
                     //事務儲存
                     await EntityManager.save(userSave);
+                    return true;
                   }
                 }
               );
               if (success) {
                 return true;
               } else {
-                return "/signin";
+                return false;
               }
             }
+            console.log("返回true");
+            return true;
           }
         } catch (e) {
-          console.error("----------");
-          console.error("Callback Error");
-          console.error(e);
-          console.error("----------");
-          return "/signin";
+          console.error("Error in signIn callback:", e);
+          return false; // 錯誤時拒絕登入
         }
 
-        return "/signin";
+        return false;
       }
 
-      return "/signin";
+      return false;
     },
     //設定jwt token
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.expires = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      // 1. 第一次登入：user 有資料，token 還沒建立
+      if (user && user.email) {
+        const dataSource = await initDataSourse();
+        const userRepository = dataSource.getRepository(User);
+
+        // 用 email 查資料庫，取得 User.id
+        const dbUser = await userRepository.findOne({
+          where: { email: user.email },
+          select: ["id", "name", "email"],
+        });
+
+        if (dbUser) {
+          token.id = dbUser.id.toString();
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+        }
       }
       return token;
     },
@@ -204,12 +221,15 @@ export const authOptions: NextAuthOptions = {
       session.user = token;
       return session;
     },
-    // async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-    //   if (url === "auth/signin") {
-    //     return baseUrl;
-    //   }
-    //   return url.startsWith(baseUrl) ? url : baseUrl;
-    // },
+    async redirect({ url, baseUrl }) {
+      // 如果是从登录页面重定向，则转到首页
+      console.log(`Redirecting from ${url} with base ${baseUrl}`);
+      if (url === `${baseUrl}/signin`) {
+        console.log(`Redirecting from ${url} with base ${baseUrl}`);
+        return `${baseUrl}/`;
+      }
+      return url;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   logger: {

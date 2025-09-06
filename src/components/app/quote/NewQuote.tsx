@@ -17,29 +17,33 @@ interface uploadFileWithWorker {
 //* 上傳分片到webWorker
 function uploadFileWithWorker(
   uploadFileWithWorker: uploadFileWithWorker,
-  worker: Worker
+  worker: Worker,
+  dispatch: ReturnType<typeof useAppDispatch>
 ): Promise<{ success: boolean }> {
   return new Promise((resolve, reject) => {
-    const dispatch = useAppDispatch();
+    // const dispatch = useAppDispatch();
     worker.postMessage(uploadFileWithWorker);
     worker.onmessage = (event) => {
-      const { success, progress } = event.data;
+      const { success, progress, message } = event.data;
       switch (success) {
         case "uploading":
           //設定進度
-          dispatch(setFileUploadPercentage(progress));
           console.log("進度上傳");
+          dispatch(setFileUploadPercentage(progress));
           break;
         case "failure":
           //進度取消
-          dispatch(setUploadState("上傳失敗"));
           console.log("進度取消");
+          if (message) {
+            console.dir(message, { depth: null });
+          }
+          dispatch(setUploadState("上傳失敗"));
           reject({ success: false });
           break;
         case "success":
           //總進度完成+1
-          resolve({ success: true });
           console.log("進度完成");
+          resolve({ success: true });
           break;
         default:
           console.log("進度穿透");
@@ -47,8 +51,9 @@ function uploadFileWithWorker(
           break;
       }
     };
-    worker.onerror = () => {
+    worker.onerror = (e) => {
       console.error("Worker error");
+      console.dir(e, { depth: null });
       dispatch(setUploadState("上傳失敗"));
       reject({ success: false });
     };
@@ -69,10 +74,14 @@ const NewQuote: React.FC = () => {
   //* 檢查錯誤後函式推入列隊
   //* 創建UUID,worker
   //* 導出總照片數量、上傳陣列
-  async function fileSequentially(fileUUID: string, worker: Worker) {
+  async function fileSequentially(
+    fileUUID: string,
+    worker: Worker,
+    dispatch: ReturnType<typeof useAppDispatch>
+  ): Promise<{ uploadQueue: Array<() => Promise<{ success: boolean }>> }> {
     const UUID = fileUUID;
     const uploadQueue: (() => Promise<{ success: boolean }>)[] = [];
-
+    console.dir(photoFile, { depth: null });
     //* 第一層 選組別
     for (const [index, firstNested] of photoFile.entries()) {
       if (index < 4) {
@@ -81,12 +90,13 @@ const NewQuote: React.FC = () => {
         for (const [secondIndex, secondNested] of firstNested.entries()) {
           if (!secondNested || secondNested.length == 0) {
             //+ 如果內外機沒有輸入或為空,返回空數組
+            console.log("如果內外機沒有輸入或為空,返回空數組");
             return { uploadQueue: [] };
           }
 
           if (secondIndex < 2) {
             //+ 內外機最多只有兩組別
-            //* 第三層 選相片
+            //* 第三層 遍歷相片
             for (const [fileindex, file] of secondNested.entries()) {
               if (fileindex < 2) {
                 //+ 照片最大2張
@@ -98,7 +108,8 @@ const NewQuote: React.FC = () => {
                 };
                 //+ 推入上傳列隊 準備上傳
                 uploadQueue.push(() => {
-                  return uploadFileWithWorker(props, worker);
+                  console.log("推入上傳列隊 準備上傳");
+                  return uploadFileWithWorker(props, worker, dispatch);
                 });
               }
             }
@@ -106,6 +117,7 @@ const NewQuote: React.FC = () => {
         }
       }
     }
+    console.log("送出數組結果");
     return { uploadQueue };
   }
   //* 簡易認證文字表單
@@ -116,15 +128,16 @@ const NewQuote: React.FC = () => {
       remarks.length <= 300 &&
       remarks.length >= 10
     ) {
+      console.log("easyFormWordCheck 驗證成功");
       return true;
     }
-
+    console.log("easyFormWordCheck 驗證失敗");
     return false;
   }
   //子組件上移
 
   const [remarks, setRemarks] = useState("");
-  const [brands, setBands] = useState("");
+  const [brands, setBrands] = useState("");
   //----日曬checkbox-----
   // const [selectedOption, setSelectedOption] = useState<string>("no");
   // const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,19 +251,22 @@ const NewQuote: React.FC = () => {
   //回復完成結果
 
   // const { data: session, status } = useSession();
-
+  const dispatch = useAppDispatch();
   const dataUpload = async () => {
+    let worker: Worker | null = null;
+
     try {
       console.log("開始上傳");
       const UUID = crypto.randomUUID();
       const upload = { UUID, conditionerSelectedOption, brands, remarks };
-      const worker = new Worker(
+      worker = new Worker(
         new URL("@/utils/webWorker/fileUpload.ts", import.meta.url)
       );
-
       //* 驗證圖片數量，返回圖片總量、待上傳異步陣列，傳入UUID
-      const imageCheck = await fileSequentially(UUID, worker);
-      if (imageCheck.uploadQueue.length == null) {
+      const imageCheck = await fileSequentially(UUID, worker, dispatch);
+      console.dir(imageCheck, { depth: null });
+      if (imageCheck.uploadQueue.length == 0) {
+        console.log("mageCheck.uploadQueue 長度為空");
         return;
       }
       const imageArray = imageCheck.uploadQueue;
@@ -265,13 +281,12 @@ const NewQuote: React.FC = () => {
 
           {
             method: "POST",
-            headers: { "content-type": "applicatiaion/json" },
+            headers: { "content-type": "application/json" },
             credentials: "include",
             body: JSON.stringify(upload),
           }
         );
         if (contentUpload.ok) {
-          const dispatch = useAppDispatch();
           //+ 定義相片總數
           dispatch(setFileTotalCount(imageArray.length));
           //+ 開啟上傳視窗
@@ -299,17 +314,21 @@ const NewQuote: React.FC = () => {
           dispatch(setUploadState("上傳完成"));
         } else {
           console.error("表單上傳失敗,form upload failed");
-          const dispatch = useAppDispatch();
+
           dispatch(setUploadState("上傳失敗"));
         }
 
         //關閉worker
-
-        worker.terminate();
+      } else {
+        console.log("easyFormWordCheck faild");
       }
     } catch (error) {
       console.error("上傳錯誤:", error);
       return;
+    } finally {
+      if (worker) {
+        worker.terminate();
+      }
     }
 
     //如果文字表單上傳成功 圖片上傳 啟動分片
@@ -320,10 +339,10 @@ const NewQuote: React.FC = () => {
     // }
   };
 
-  console.log("顯示登入資訊:");
+  // console.log("顯示登入資訊:");
   // console.dir(session, { depth: null });
   return (
-    <div>
+    <div className="w-full">
       {/*報價品牌*/}
       <div className="flex flex-col items-center mt-1">
         <div className="border-gray-400 border-b-2  w-full ">
@@ -365,7 +384,7 @@ const NewQuote: React.FC = () => {
             maxLength={60}
             placeholder="請輸入想要的其他品牌"
             value={brands}
-            onChange={(e) => setBands(e.target.value)}
+            onChange={(e) => setBrands(e.target.value)}
             rows={5}
             cols={40}
             className=" m-2 border-2 border-gray-950 rounded resize-y leading-tight shadow"

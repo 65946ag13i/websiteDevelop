@@ -240,8 +240,8 @@ const ImageUpload: React.FC<ChildProps> = ({
                 key={`index-${index}`}
               >
                 <div className="border-b-2 border-gray-400">內機</div>
-                {photoURL[index][1] &&
-                  photoURL[index][1].map((photo, index2) => (
+                {photoURL[index][0] &&
+                  photoURL[index][0].map((photo, index2) => (
                     <div
                       className="w-full"
                       key={`index-${index}-out1-photo-${index2}`}
@@ -257,7 +257,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                       <div className="m-1 p-1">
                         <button
                           onClick={() => {
-                            deleteURLAndFile(index, 1, index2);
+                            deleteURLAndFile(index, 0, index2);
                           }}
                           className="m-1 px-1 border-2 border-gray-900 rounded shadow"
                         >
@@ -279,15 +279,15 @@ const ImageUpload: React.FC<ChildProps> = ({
                     id={"group" + index + "-file-" + "1"}
                     multiple
                     onChange={(file) => {
-                      createURLAndSaveFile(file, index, 1);
+                      createURLAndSaveFile(file, index, 0);
                     }}
                   ></input>
                 </div>
               </div>
               <div className="border-2 border-gray-950 m-2 p-2 rounded bg-webGreenToBrown-400">
                 <div className="border-b-2 border-gray-400">外機</div>
-                {photoURL[index][2] &&
-                  photoURL[index][2].map((photo, index2) => (
+                {photoURL[index][1] &&
+                  photoURL[index][1].map((photo, index2) => (
                     <div
                       className="w-full"
                       key={`index-${index}-out-2-photo-${index2}`}
@@ -303,7 +303,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                       <div className="m-1 p-1">
                         <button
                           onClick={() => {
-                            deleteURLAndFile(index, 2, index2);
+                            deleteURLAndFile(index, 1, index2);
                           }}
                           className="m-1 px-1 border-2 border-gray-900 rounded shadow"
                         >
@@ -325,7 +325,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                     style={{ display: "none" }}
                     id={"group" + index + "-file-" + "2"}
                     onChange={(file) => {
-                      createURLAndSaveFile(file, index, 2);
+                      createURLAndSaveFile(file, index, 1);
                     }}
                   ></input>
                 </div>
@@ -335,7 +335,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                   <label>
                     <button
                       id={"deleteFile" + index}
-                      className="p-1 m-1 border-2 border-gray-900 rounded-lg shadow"
+                      className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
                       onClick={() => {
                         deleteFileButton(index);
                       }}

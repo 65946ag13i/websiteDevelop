@@ -7,7 +7,7 @@ export const searchUserQuoteTable = async (page: string) => {
   params.append("page", page);
   try {
     const result = await fetch(
-      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuoteTable?${params.toString()}`,
+      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuoteTable?${params.toString()}`,
       {
         method: "GET",
         credentials: "include",
@@ -29,13 +29,14 @@ export const searchUserQuoteTable = async (page: string) => {
 //* 直接驗證使用者後拿ID
 //* 用ID 及 傳入的文章ID 做文章搜索
 export const searchUserQuote = async (quoteUUID: string) => {
+  if (!quoteUUID) return null;
   const params = new URLSearchParams();
   params.append("quoteUUID", quoteUUID);
-
+  console.log("sdf");
   //* 返回使用者文字報價單
   try {
     const result = await fetch(
-      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuote?${params.toString()}`,
+      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuote?${params.toString()}`,
       {
         method: "GET",
         credentials: "include",

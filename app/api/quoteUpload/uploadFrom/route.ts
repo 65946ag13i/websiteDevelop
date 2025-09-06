@@ -23,7 +23,9 @@ export async function POST(req: NextRequest) {
       );
     }
     const userID = session?.user.id;
-    if (!userID) {
+    const databaseUserId = Number(userID);
+    if (!userID || isNaN(databaseUserId)) {
+      console.log("使用者ID驗證失敗");
       return NextResponse.json(
         { message: "User ID not found in session" },
         { status: 400 }
@@ -34,9 +36,15 @@ export async function POST(req: NextRequest) {
 
     //~ 驗證表單資料並儲存
     const formdata = await req.json();
+    //* 把使用者ID放入,需要自己寫主表ID
+    formdata.userid = databaseUserId;
+    console.dir(formdata, { depth: null });
     const dto = plainToClass(userQuote, formdata);
     const errors = await validate(dto);
+    console.log("DTO to save:", dto);
     if (errors.length > 0) {
+      console.log("表單驗證失敗");
+      console.dir(errors, { depth: null });
       return NextResponse.json(
         { message: "Form data validation failed。" },
         { status: 400 }
@@ -45,7 +53,17 @@ export async function POST(req: NextRequest) {
 
     const DataSourse = await initDataSourse();
     const userSourse = await DataSourse.getRepository(userQuote);
-    await userSourse.save(dto);
+    const result = await userSourse.save(dto);
+    console.log(result);
+    if (!result || !result.id) {
+      console.log("資料保存失敗");
+
+      return NextResponse.json(
+        { message: "Failed to save data" },
+        { status: 500 }
+      );
+    }
+
     //~ 驗證表單資料並儲存
 
     //~ 建立使用者資料夾 與 UUID資料夾 提供後續上傳圖片

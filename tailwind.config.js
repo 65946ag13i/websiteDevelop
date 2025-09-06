@@ -38,9 +38,5 @@ module.exports = {
     },
   },
   plugins: [],
-  corePlugins: {
-    preflight: true, // 确保 Preflight 是启用的
-    transform: false,
-    filter: false,
-  },
+  corePlugins: { preflight: true },
 };

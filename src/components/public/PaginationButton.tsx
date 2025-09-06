@@ -38,13 +38,13 @@ export default function PaginationBtuuon({
   }, [page, totalCount]);
 
   return (
-    <div>
+    <div className="m-2">
       {page <= 4 ? (
         <div>
           {pagination.map((number) => {
             return (
               <button
-                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
+                className={`${page === number ? "bg-amber-200" : "bg-slate-400"} m-2 px-2 rounded-lg min-w-7`}
                 onClick={() => setPage(number)}
                 key={`pagination-${number}`}
               >
@@ -59,7 +59,7 @@ export default function PaginationBtuuon({
           //* 顯示範例  1﹉ 2 3 4 5﹉ 6
           */}
           <button
-            className="bg-slate-400"
+            className="bg-slate-400  m-2 px-2 rounded-lg min-w-7"
             onClick={() => setPage(1)}
             key={`pagination-1`}
           >
@@ -69,7 +69,7 @@ export default function PaginationBtuuon({
           {pagination.map((number) => {
             return (
               <button
-                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
+                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}  m-2 px-2 rounded-lg min-w-7`}
                 onClick={() => setPage(number)}
                 key={`pagination-${number}`}
               >
@@ -104,7 +104,7 @@ export default function PaginationBtuuon({
               <button
                 className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
                 onClick={() => setPage(number)}
-                key={`pagination-${number}`}
+                key={`pagination-${number}  m-2 px-2 rounded-lg min-w-7`}
               >
                 {number}
               </button>

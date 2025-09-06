@@ -12,6 +12,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     //* 驗證登入
     const session = await getServerSession(authOptions);
+    // console.log("first", JSON.stringify(session, null, 2));
+
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
@@ -25,8 +27,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     //* 檢查使用者目錄存在
     const userID = session.user.id;
-    const UUID = req.nextUrl.searchParams.get("UUID");
-    const fileString = req.nextUrl.searchParams.get("file");
+    const UUID = req.nextUrl.searchParams.get("userQuoteUUID");
+    const fileName = req.nextUrl.searchParams.get("fileName");
+    console.log("-------------------------");
+    console.log(UUID);
+    console.log(UUID);
+    console.log(fileName);
     //* 檢查UUID
     if (!UUID || typeof UUID !== "string") {
       return NextResponse.json(
@@ -35,7 +41,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
     //* 檢查檔名
-    if (!fileString || typeof fileString !== "string") {
+    if (!fileName || typeof fileName !== "string") {
       return NextResponse.json(
         { message: "Invalid file name/無效檔案名稱" },
         { status: 404 }
@@ -49,8 +55,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       "User",
       userID,
       UUID,
-      fileString
+      fileName
     );
+    console.log(fileDirPath);
     //* 檢查檔案存在
     const checkDir = await checkOrCreateFolder(fileDirPath, false);
     if (checkDir === false) {
@@ -62,8 +69,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    //* 獲取檔案副檔名
+    //* 獲取檔案副檔名，轉換為前端格式
     const contentType = await getContentTypeByExtension(fileDirPath);
+    console.log(contentType);
     if (!contentType) {
       return NextResponse.json(
         {
@@ -78,6 +86,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return new NextResponse(fileStream as any, {
       headers: {
         "Content-Type": contentType,
+        "Cache-Control": "no-store, max-age=0",
       },
     });
   } catch (error) {

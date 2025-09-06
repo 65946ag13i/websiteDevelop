@@ -197,7 +197,7 @@ const ComponentName: React.FC = () => {
           {" "}
           <div className="w-[80%] sm:w-[50%] mx-auto  ">
             <button
-              onClick={() => signIn("google")}
+              onClick={() => signIn("google", { callbackUrl: "/" })}
               type="button"
               className="rounded-full bg-red-700 p-0 w-full transition-transform duration-100 ease-in-out transform active:scale-98 active:shadow-lg"
             >

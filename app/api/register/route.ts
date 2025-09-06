@@ -87,7 +87,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
 
       await userRepository.save(newUser); //儲存資料
-      return NextResponse.redirect("/signin");
+
+      const url = req.nextUrl.clone();
+      url.pathname = "/signin";
+      return NextResponse.redirect(url);
       //~驗證碼驗證過後註冊帳號
     } else {
       console.error("驗證碼驗證錯誤" + email);

@@ -15,14 +15,19 @@ const repairPage: React.FC = () => {
   //~----前言開關-----
   const [page, setPage] = useState<string>("newQuote");
 
-  const pageNavigate = (currentPage: String) => {
-    if (page != currentPage && currentPage) setPage(page);
+  const pageNavigate = (currentPage: string) => {
+    // console.log(page);
+    // console.log(currentPage);
+    // console.log(page === currentPage);
+    // console.log(page !== currentPage);
+    if (page !== currentPage) setPage(currentPage);
   };
 
   const { data, status } = useSession();
-
+  // console.log("使用者資料驗證");
+  // console.dir(data, { depth: null });
   return (
-    <div className="flex flex-col  justify-center w-full sm:w-[90%]  min-h-screen ">
+    <div className="flex flex-col w-full mt-2 sm:w-[90%]   min-h-screen ">
       {"unauthenticated" === status ? (
         <div className="flex flex-col items-center m-2">
           <div className="m-2 p-1 ">使用報價系統請先登入</div>
@@ -82,7 +87,7 @@ const repairPage: React.FC = () => {
                   歷史估價
                 </button>
                 <button
-                  onClick={() => pageNavigate("newQChangePassworduote")}
+                  onClick={() => pageNavigate("ChangePassword")}
                   className="p-1 m-1 border-2 border-gray-900 rounded-lg shadow"
                 >
                   修改密碼
@@ -95,10 +100,10 @@ const repairPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="text-center  sm:w-4/5  bg-gray-100 ">
+            <div className="flex justify-center items-center text-center  sm:w-4/5  bg-gray-100 ">
               {page === "newQuote" && <NewQuote />}
-              {page === "ChangePassword" && <ChangePassword />}
               {page === "QuoteTableServer" && <QuoteTableServer />}
+              {page === "ChangePassword" && <ChangePassword />}
             </div>
           </div>
         </>

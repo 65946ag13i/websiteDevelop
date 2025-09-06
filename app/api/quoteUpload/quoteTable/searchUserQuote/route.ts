@@ -25,6 +25,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    //* 取得訂單UUID
+    const quoteUUID = request.nextUrl.searchParams.get("quoteUUID");
+    if (!quoteUUID || typeof quoteUUID !== "string") {
+      return NextResponse.json(
+        { message: "Invalid quote ID/無效ID" },
+        { status: 400 }
+      );
+    }
+
     //* 檢查使用者目錄存在
     const userID = session.user.id;
     const fileDirPath = path.join(process.cwd(), "src", "Data", "User", userID);
@@ -35,15 +44,6 @@ export async function GET(request: NextRequest) {
           message: "查無使用者目錄/no user directory found",
         },
         { status: 500 }
-      );
-    }
-
-    //* 取得訂單UUID
-    const quoteUUID = request.nextUrl.searchParams.get("quoteUUID");
-    if (!quoteUUID || typeof quoteUUID !== "string") {
-      return NextResponse.json(
-        { message: "Invalid quote ID/無效ID" },
-        { status: 400 }
       );
     }
 
@@ -69,22 +69,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const getDataSourse = await initDataSourse();
-    const userData = await getDataSourse
-      .getRepository(userQuote)
-      .createQueryBuilder("uq")
-      .where("uq.UUID = :uuid", { uuid: sanitizeUUID })
-      .andWhere("uq.userID=:userID", { userID: userID })
-      .getOne();
+    // const getDataSourse = await initDataSourse();
+    // const userData = await getDataSourse
+    //   .getRepository(userQuote)
+    //   .createQueryBuilder("uq")
+    //   .where("uq.UUID = :uuid", { uuid: sanitizeUUID })
+    //   .andWhere("uq.userid=:userID", { userID: userID })
+    //   .getOne();
 
-    if (!userData) {
-      return NextResponse.json(
-        { message: "No data found/查無資料" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ images, userData }, { status: 200 });
+    // if (!userData) {
+    //   return NextResponse.json(
+    //     { message: "No data found/查無資料" },
+    //     { status: 404 }
+    //   );
+    // }
+    console.dir(images, { depth: null });
+    return NextResponse.json(images, { status: 200 });
   } catch (error) {
     console.error("Error in SearchUserQuote GET request:", error);
     return NextResponse.json(

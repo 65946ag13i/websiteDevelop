@@ -10,7 +10,7 @@ const ChangePassword: React.FC = () => {
 
   const [newPassword, setNewPassword] = useState("");
 
-  const [checkPassword, setcheCkPassword] = useState("");
+  const [checkPassword, setCheckPassword] = useState("");
   const [severMessage, setSeverMessage] = useState("");
   //* 確認密碼
   const [passwordIsVailad, setPasswordIsVailad] = useState<boolean>(true);
@@ -21,14 +21,19 @@ const ChangePassword: React.FC = () => {
     const passwordRegex =
       /^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/;
     //* 驗證整體密碼
-    if (passwordRegex.test(newPassword)) {
-      setPasswordIsVailad(true);
+    if (!newPassword) {
+      setPasswordIsVailad(true); //+ 關閉提示
+
+      return;
+    } else if (passwordRegex.test(newPassword)) {
+      setPasswordIsVailad(true); //+ 關閉提示
+
       return;
     } else {
-      setPasswordIsVailad(false);
+      setPasswordIsVailad(false); //+ 打開提示
     }
 
-    if (newPassword.length > 30 || newPassword.length < 3) {
+    if (newPassword.length > 30 || newPassword.length < 8) {
       setPasswordErrorMessage("密碼長度應該 8 到 30 字元之間");
       return;
     }
@@ -62,12 +67,12 @@ const ChangePassword: React.FC = () => {
   useEffect(() => {
     const passworVailadTimer = setTimeout(() => {
       passwordRegexCheck();
-    }, 1500);
+    }, 900);
 
     return () => {
       clearTimeout(passworVailadTimer);
     };
-  }, [passwordIsVailad]);
+  }, [newPassword]);
   //~ 密碼驗證
 
   //~ 密碼相同確認
@@ -76,22 +81,26 @@ const ChangePassword: React.FC = () => {
 
   //* 密碼相同確認
   const checkPasswordFC = () => {
-    if (newPassword === checkPassword && newPassword && checkPassword) {
-      setPasswordIsSame(false);
+    //+ 新密碼 與 確認密碼 相同 ， 排除新舊空字串
+    console.log(newPassword === checkPassword);
+    if (!newPassword && !checkPassword) {
+      setPasswordIsSame(false); //+ 關閉錯誤
+    } else if (newPassword === checkPassword) {
+      setPasswordIsSame(false); //+ 關閉錯誤
     } else {
-      setPasswordIsSame(true);
+      setPasswordIsSame(true); //+ 打開錯誤
     }
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       checkPasswordFC();
-    }, 1500);
+    }, 900);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [checkPassword]);
+  }, [checkPassword, newPassword]);
   //~ 密碼相同確認
 
   //* 提交表單
@@ -136,47 +145,78 @@ const ChangePassword: React.FC = () => {
   const [passwordCheck, setPasswordCheck] = useState<Boolean>(false);
 
   return (
-    <div>
+    <div className="mt-2">
       {severMessage ? severMessage : null}
-      <form onSubmit={submitTheForm}>
-        <label htmlFor="password">
+      <form
+        onSubmit={submitTheForm}
+        className="grid grid-cols-[auto,1fr] grid-rows-7"
+      >
+        <label
+          htmlFor="password"
+          className="my-1 flex items-center justify-center"
+        >
           輸入密碼:
-          <input
-            type="text"
-            id="password"
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
         </label>
-        <label htmlFor="newPassword">
+        <input
+          type="text"
+          id="password"
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
+         focus:border-blue-500 sm:text-sm  my-1 mx-2"
+        />
+
+        <label
+          htmlFor="newPassword"
+          className="my-1 flex items-center justify-center"
+        >
           輸入新密碼:
-          <input
-            type="text"
-            id="newPassword"
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
         </label>
+        <input
+          type="text"
+          id="newPassword"
+          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
+         focus:border-blue-500 sm:text-sm my-1 mx-2"
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
         {passwordIsVailad ? null : (
-          <div className=" text-red-600 ">{passwordErrorMessage}</div>
+          <div className=" text-red-600 col-span-2">{passwordErrorMessage}</div>
         )}
-        <label htmlFor="confirmPassword">
+
+        <label
+          htmlFor="confirmPassword"
+          className="my-1 flex items-center justify-center"
+        >
           再次輸入新密碼:
-          <input
-            type="text"
-            id="confirmPassword"
-            onChange={(e) => {
-              setcheCkPassword(e.target.value);
-            }}
-          />
         </label>
+        <input
+          type="text"
+          id="confirmPassword"
+          onChange={(e) => {
+            setCheckPassword(e.target.value);
+          }}
+          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
+         focus:border-blue-500 sm:text-sm my-1 mx-2"
+        />
         {passwordIsSame ? (
-          <div className=" text-red-600 ">新密碼和確認新密碼不相同</div>
+          <div className=" text-red-600 col-span-2 flex items-center justify-center">
+            新密碼和確認新密碼不相同
+          </div>
         ) : null}
         {passwordCheck ? (
-          <div className=" text-red-600 ">
+          <div className=" text-red-600 col-span-2 flex items-center justify-center">
             請重新確認舊密碼和密碼是否符合需求
           </div>
         ) : null}
-        <button type="submit">送出</button>
+
+        <button
+          type="submit"
+          className="col-span-2 my-3 mx-auto px-2 bg-green-300 rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          送出
+        </button>
       </form>
     </div>
   );

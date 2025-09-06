@@ -9,6 +9,7 @@ import {
 import { IsEmail, Length, Matches } from "class-validator";
 import { oauth2List } from "@/backend/entities/oauth2List";
 import { userQuote } from "@/backend/entities/userQuote";
+// import type  userQuote from "./userQuote";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -33,11 +34,7 @@ export class User {
   })
   email: string = "";
 
-  @Column({ type: "varchar", nullable: true })
-  @Length(8, 65)
-  @Matches(/^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/, {
-    message: "密碼不合規",
-  })
+  @Column({ type: "varchar", length: 70, nullable: true })
   password: string = "";
 
   @OneToMany(() => oauth2List, (oauth2List) => oauth2List.user, {
@@ -47,4 +44,6 @@ export class User {
 
   @OneToMany(() => userQuote, (userQuote) => userQuote.user) //如何放到oatth2儲存
   userQuote?: userQuote[]; //oauth2 儲存清單
+  // @OneToMany(() => require("./userQuote").userQuote, (quote) => quote.user)
+  // userQuote!: userQuote[];
 }

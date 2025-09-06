@@ -58,7 +58,8 @@ self.onmessage = async function (event) {
         formdata.append("totalChunks", totalChunks.toString());
         formdata.append("photoNumber", photoNumber.toString());
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/upload`,
+          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/uploadImage`,
+
           {
             method: "POST",
             credentials: "include",
@@ -67,7 +68,11 @@ self.onmessage = async function (event) {
         );
 
         if (!response.ok) {
-          return { success: false, SliceIndex };
+          retries--;
+          if (retries === 0) {
+            return { success: false, SliceIndex };
+          }
+          continue;
         }
 
         return { success: true, SliceIndex };
@@ -106,15 +111,11 @@ self.onmessage = async function (event) {
           results.push(result);
           self.postMessage({
             success: "uploading",
-            progress: Math.floor(i / totalChunks) * 100,
+            progress: Math.floor((i / totalChunks) * 100),
           });
         })
         .catch((error) => {
-          self.postMessage({
-            success: "failure",
-            progress: "",
-          });
-          return console.log(error);
+          throw error;
         })
         .finally(() => {
           executing.splice(executing.indexOf(taskPromise), 1);
@@ -135,7 +136,7 @@ self.onmessage = async function (event) {
 
     const result = await concurrently(input);
     const allSuccess = result.every((result) => {
-      result.success == true;
+      return result.success == true;
     });
 
     if (allSuccess) {
@@ -144,9 +145,13 @@ self.onmessage = async function (event) {
         progress: "",
       });
     } else {
+      const errorMessage = result.filter(
+        (success) => success.success === false
+      );
       self.postMessage({
         success: "failure",
         progress: "",
+        message: errorMessage,
       });
     }
   } catch (e) {

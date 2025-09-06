@@ -128,13 +128,13 @@ const register: React.FC = () => {
   }, [password, confirmPassword]);
 
   //*驗證信後端寄出彈窗
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     if (showToast) {
-  //       setshowToast(false);
-  //     }
-  //   }, 4000);
-  // }, [showToast]);
+  useEffect(() => {
+    setTimeout(() => {
+      if (showToast) {
+        setshowToast(false);
+      }
+    }, 6000);
+  }, [showToast]);
 
   //*寄出驗證信
   const emailAuthentication = async () => {
@@ -206,11 +206,14 @@ const register: React.FC = () => {
           const serverResponse = await response.json();
           console.error(serverResponse.message);
           setshowToastColor(false);
-          setverificationMessage("伺服器內部錯誤，請重新送出");
+          setverificationMessage("伺服器錯誤，請重新送出");
           setshowToast(true);
         }
       } catch (error) {
         console.error("register page error on registerOnload function:", error);
+        setshowToastColor(false);
+        setverificationMessage("伺服器錯誤，請重新送出");
+        setshowToast(true);
       }
     } else {
       //視窗震動
@@ -253,13 +256,6 @@ const register: React.FC = () => {
   };
 
   //關閉視窗震動 動畫啟動在送出表單
-  const openbutton = () => {
-    setshowToast(true);
-  };
-
-  const closebutton = () => {
-    setshowToast(false);
-  };
 
   return (
     <div className="flex flex-col items-center  mx-auto sm:w-[80%] m-5 ">
@@ -270,19 +266,21 @@ const register: React.FC = () => {
           border-2 
           ${showToast ? "toast-show" : "toast"}
         ` */}
-      <button onClick={openbutton}>wefwefewf</button>
-      <button onClick={closebutton}>wefwefewf</button>
+
       {
         <div
           className={` 
-         bg-red-500
-           transition-all duration-1000 ease-in-out 
+            ${showToastColor ? "bg-green-400" : "bg-red-500"}
+         
+           transition-all duration-500 ease-in-out 
            transform origin-top
-                      overflow-hidden h-0
+            rounded-lg px-2
+            shadow
+            overflow-hidden border-black border-2
+            ${showToast ? " scale-100 visible" : " scale-0 invisible"}
           `}
         >
-          {/* {verificationMessage} */}
-          123
+          {verificationMessage}
         </div>
       }
       {isClient && (
@@ -402,7 +400,7 @@ const register: React.FC = () => {
             <button
               type="button"
               onClick={registerOnload}
-              className="flex justify-center bg-green-400 rounded-lg mx-auto w-16 mt-1 shadow"
+              className="flex justify-center bg-green-400 rounded-lg mx-auto w-16 mt-1 shadow border-black border-2"
             >
               送出
             </button>

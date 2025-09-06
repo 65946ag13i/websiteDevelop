@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       !session.user.id ||
       typeof session.user.id !== "string"
     ) {
+      console.log("Log failed login attempts");
       return NextResponse.json(
         { message: "User ID not found in session" },
         { status: 400 }
@@ -35,20 +36,21 @@ export async function GET(request: NextRequest) {
 
     const pageNumber = parseInt(page, 10);
     const pageSize = 10;
-    const pagelimt = (pageNumber - 1) * pageSize; // 計算跳過的數量
+    const pagelimit = (pageNumber - 1) * pageSize; // 計算跳過的數量
 
-    const getDataSourse = await initDataSourse();
-    const [result, count] = await getDataSourse
+    const getDataSource = await initDataSourse();
+    const [result, count] = await getDataSource
       .getRepository(userQuote)
       .createQueryBuilder("uq")
-      .select(["uq.id", "uq.createdAt", "uq.state", "uq.UUID"])
-      .where("uq.userID=:userId", { userID: userId })
+      // .select(["uq.id", "uq.createdAt", "uq.state", "uq.UUID"])
+      .where("uq.userid=:userId", { userId: userId })
       .orderBy("uq.createdAt", "DESC")
-      .skip(pagelimt) // 假設從第0頁開始
+      .skip(pagelimit) // 假設從第0頁開始
       .take(pageSize) // 假設每頁顯示10條數據
       .getManyAndCount();
 
     if (!result || result.length === 0) {
+      console.log("no data found in the database");
       return NextResponse.json(
         { message: "No quotes found for this user/找不到使用者資料" },
         { status: 404 }
