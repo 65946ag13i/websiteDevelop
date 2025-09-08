@@ -4,7 +4,7 @@ import ImageUpload from "@/components/ImageUpload";
 import {
   setFileTotalCount,
   setFileUploadPercentage,
-  setWindowOpen,
+  setDialogOpen,
   setUploadState,
   setNumberOfCurrentFiles,
 } from "@/redux/features/upload/uploadSlice";
@@ -29,6 +29,7 @@ function uploadFileWithWorker(
         case "uploading":
           //設定進度
           console.log("進度上傳");
+          console.log(progress);
           dispatch(setFileUploadPercentage(progress));
           break;
         case "failure":
@@ -290,7 +291,7 @@ const NewQuote: React.FC = () => {
           //+ 定義相片總數
           dispatch(setFileTotalCount(imageArray.length));
           //+ 開啟上傳視窗
-          dispatch(setWindowOpen(true));
+          dispatch(setDialogOpen(true));
 
           //+ 循環上傳相片異步陣列
           dispatch(setUploadState("上傳中"));
@@ -321,6 +322,7 @@ const NewQuote: React.FC = () => {
         //關閉worker
       } else {
         console.log("easyFormWordCheck faild");
+        dispatch(setUploadState("上傳失敗"));
       }
     } catch (error) {
       console.error("上傳錯誤:", error);

@@ -12,6 +12,7 @@
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@mui/material": "7.0.2",
+    "@radix-ui/react-dialog": "1.1.15",
     "@reduxjs/toolkit": "2.6.1",
     "@sap/hana-client": "2.24.24",
     "@tanstack/react-query": "5.80.10",

@@ -1,6 +1,6 @@
 "use client";
-import Image from "next/image";
-import { lazy, useEffect, useMemo, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import URLImage from "@/components/image/URLImg";
 import ButtonModule from "@/components/button/ButtonModule";
 interface Order {

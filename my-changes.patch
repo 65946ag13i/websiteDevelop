@@ -1,0 +1,2662 @@
+diff --git a/app/api/quoteUpload/quoteTable/searchUserImage/route.ts b/app/api/quoteUpload/quoteTable/searchUserImage/route.ts
+index 6dd77c8..d373779 100644
+--- a/app/api/quoteUpload/quoteTable/searchUserImage/route.ts
++++ b/app/api/quoteUpload/quoteTable/searchUserImage/route.ts
+@@ -12,6 +12,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+   try {
+     //* 驗證登入
+     const session = await getServerSession(authOptions);
++    // console.log("first", JSON.stringify(session, null, 2));
++
+     if (!session) {
+       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+     }
+@@ -25,8 +27,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+ 
+     //* 檢查使用者目錄存在
+     const userID = session.user.id;
+-    const UUID = req.nextUrl.searchParams.get("UUID");
+-    const fileString = req.nextUrl.searchParams.get("file");
++    const UUID = req.nextUrl.searchParams.get("userQuoteUUID");
++    const fileName = req.nextUrl.searchParams.get("fileName");
++    console.log("-------------------------");
++    console.log(UUID);
++    console.log(UUID);
++    console.log(fileName);
+     //* 檢查UUID
+     if (!UUID || typeof UUID !== "string") {
+       return NextResponse.json(
+@@ -35,7 +41,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+       );
+     }
+     //* 檢查檔名
+-    if (!fileString || typeof fileString !== "string") {
++    if (!fileName || typeof fileName !== "string") {
+       return NextResponse.json(
+         { message: "Invalid file name/無效檔案名稱" },
+         { status: 404 }
+@@ -49,8 +55,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+       "User",
+       userID,
+       UUID,
+-      fileString
++      fileName
+     );
++    console.log(fileDirPath);
+     //* 檢查檔案存在
+     const checkDir = await checkOrCreateFolder(fileDirPath, false);
+     if (checkDir === false) {
+@@ -62,8 +69,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+       );
+     }
+ 
+-    //* 獲取檔案副檔名
++    //* 獲取檔案副檔名，轉換為前端格式
+     const contentType = await getContentTypeByExtension(fileDirPath);
++    console.log(contentType);
+     if (!contentType) {
+       return NextResponse.json(
+         {
+@@ -78,6 +86,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
+     return new NextResponse(fileStream as any, {
+       headers: {
+         "Content-Type": contentType,
++        "Cache-Control": "no-store, max-age=0",
+       },
+     });
+   } catch (error) {
+diff --git a/app/api/quoteUpload/quoteTable/searchUserQuote/route.ts b/app/api/quoteUpload/quoteTable/searchUserQuote/route.ts
+index b677d42..a15d89e 100644
+--- a/app/api/quoteUpload/quoteTable/searchUserQuote/route.ts
++++ b/app/api/quoteUpload/quoteTable/searchUserQuote/route.ts
+@@ -25,6 +25,15 @@ export async function GET(request: NextRequest) {
+       );
+     }
+ 
++    //* 取得訂單UUID
++    const quoteUUID = request.nextUrl.searchParams.get("quoteUUID");
++    if (!quoteUUID || typeof quoteUUID !== "string") {
++      return NextResponse.json(
++        { message: "Invalid quote ID/無效ID" },
++        { status: 400 }
++      );
++    }
++
+     //* 檢查使用者目錄存在
+     const userID = session.user.id;
+     const fileDirPath = path.join(process.cwd(), "src", "Data", "User", userID);
+@@ -38,15 +47,6 @@ export async function GET(request: NextRequest) {
+       );
+     }
+ 
+-    //* 取得訂單UUID
+-    const quoteUUID = request.nextUrl.searchParams.get("quoteUUID");
+-    if (!quoteUUID || typeof quoteUUID !== "string") {
+-      return NextResponse.json(
+-        { message: "Invalid quote ID/無效ID" },
+-        { status: 400 }
+-      );
+-    }
+-
+     //* 檢查UUID目錄存在
+     const sanitizeUUID = sanitizeInput(quoteUUID);
+     const uuidDirPath = path.join(fileDirPath, sanitizeUUID);
+@@ -69,22 +69,22 @@ export async function GET(request: NextRequest) {
+       );
+     }
+ 
+-    const getDataSourse = await initDataSourse();
+-    const userData = await getDataSourse
+-      .getRepository(userQuote)
+-      .createQueryBuilder("uq")
+-      .where("uq.UUID = :uuid", { uuid: sanitizeUUID })
+-      .andWhere("uq.userID=:userID", { userID: userID })
+-      .getOne();
+-
+-    if (!userData) {
+-      return NextResponse.json(
+-        { message: "No data found/查無資料" },
+-        { status: 404 }
+-      );
+-    }
++    // const getDataSourse = await initDataSourse();
++    // const userData = await getDataSourse
++    //   .getRepository(userQuote)
++    //   .createQueryBuilder("uq")
++    //   .where("uq.UUID = :uuid", { uuid: sanitizeUUID })
++    //   .andWhere("uq.userid=:userID", { userID: userID })
++    //   .getOne();
+ 
+-    return NextResponse.json({ images, userData }, { status: 200 });
++    // if (!userData) {
++    //   return NextResponse.json(
++    //     { message: "No data found/查無資料" },
++    //     { status: 404 }
++    //   );
++    // }
++    console.dir(images, { depth: null });
++    return NextResponse.json(images, { status: 200 });
+   } catch (error) {
+     console.error("Error in SearchUserQuote GET request:", error);
+     return NextResponse.json(
+diff --git a/app/api/quoteUpload/quoteTable/searchUserQuoteTable/route.ts b/app/api/quoteUpload/quoteTable/searchUserQuoteTable/route.ts
+index 44701f3..86d077a 100644
+--- a/app/api/quoteUpload/quoteTable/searchUserQuoteTable/route.ts
++++ b/app/api/quoteUpload/quoteTable/searchUserQuoteTable/route.ts
+@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
+       !session.user.id ||
+       typeof session.user.id !== "string"
+     ) {
++      console.log("Log failed login attempts");
+       return NextResponse.json(
+         { message: "User ID not found in session" },
+         { status: 400 }
+@@ -35,20 +36,21 @@ export async function GET(request: NextRequest) {
+ 
+     const pageNumber = parseInt(page, 10);
+     const pageSize = 10;
+-    const pagelimt = (pageNumber - 1) * pageSize; // 計算跳過的數量
++    const pagelimit = (pageNumber - 1) * pageSize; // 計算跳過的數量
+ 
+-    const getDataSourse = await initDataSourse();
+-    const [result, count] = await getDataSourse
++    const getDataSource = await initDataSourse();
++    const [result, count] = await getDataSource
+       .getRepository(userQuote)
+       .createQueryBuilder("uq")
+-      .select(["uq.id", "uq.createdAt", "uq.state", "uq.UUID"])
+-      .where("uq.userID=:userId", { userID: userId })
++      // .select(["uq.id", "uq.createdAt", "uq.state", "uq.UUID"])
++      .where("uq.userid=:userId", { userId: userId })
+       .orderBy("uq.createdAt", "DESC")
+-      .skip(pagelimt) // 假設從第0頁開始
++      .skip(pagelimit) // 假設從第0頁開始
+       .take(pageSize) // 假設每頁顯示10條數據
+       .getManyAndCount();
+ 
+     if (!result || result.length === 0) {
++      console.log("no data found in the database");
+       return NextResponse.json(
+         { message: "No quotes found for this user/找不到使用者資料" },
+         { status: 404 }
+diff --git a/app/api/quoteUpload/uploadFrom/route.ts b/app/api/quoteUpload/uploadFrom/route.ts
+index 950c995..e70851e 100644
+--- a/app/api/quoteUpload/uploadFrom/route.ts
++++ b/app/api/quoteUpload/uploadFrom/route.ts
+@@ -23,7 +23,9 @@ export async function POST(req: NextRequest) {
+       );
+     }
+     const userID = session?.user.id;
+-    if (!userID) {
++    const databaseUserId = Number(userID);
++    if (!userID || isNaN(databaseUserId)) {
++      console.log("使用者ID驗證失敗");
+       return NextResponse.json(
+         { message: "User ID not found in session" },
+         { status: 400 }
+@@ -34,9 +36,15 @@ export async function POST(req: NextRequest) {
+ 
+     //~ 驗證表單資料並儲存
+     const formdata = await req.json();
++    //* 把使用者ID放入,需要自己寫主表ID
++    formdata.userid = databaseUserId;
++    console.dir(formdata, { depth: null });
+     const dto = plainToClass(userQuote, formdata);
+     const errors = await validate(dto);
++    console.log("DTO to save:", dto);
+     if (errors.length > 0) {
++      console.log("表單驗證失敗");
++      console.dir(errors, { depth: null });
+       return NextResponse.json(
+         { message: "Form data validation failed。" },
+         { status: 400 }
+@@ -45,7 +53,17 @@ export async function POST(req: NextRequest) {
+ 
+     const DataSourse = await initDataSourse();
+     const userSourse = await DataSourse.getRepository(userQuote);
+-    await userSourse.save(dto);
++    const result = await userSourse.save(dto);
++    console.log(result);
++    if (!result || !result.id) {
++      console.log("資料保存失敗");
++
++      return NextResponse.json(
++        { message: "Failed to save data" },
++        { status: 500 }
++      );
++    }
++
+     //~ 驗證表單資料並儲存
+ 
+     //~ 建立使用者資料夾 與 UUID資料夾 提供後續上傳圖片
+diff --git a/app/api/quoteUpload/uploadImage/route.ts b/app/api/quoteUpload/uploadImage/route.ts
+index a560bb6..5437053 100644
+--- a/app/api/quoteUpload/uploadImage/route.ts
++++ b/app/api/quoteUpload/uploadImage/route.ts
+@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
+ import path from "path";
+ import fs from "fs/promises";
+ import { createWriteStream, createReadStream } from "fs";
++import { finished, pipeline } from "stream/promises";
+ 
+ export async function POST(req: NextRequest) {
+   let session;
+@@ -49,16 +50,18 @@ export async function POST(req: NextRequest) {
+       totalChunks &&
+       photoNumber
+     ) {
+-      console.log("--進入分片儲存與合併--");
++      console.log("--app api quoteUpload uploadImage 啟動分片儲存--");
+       const userID = session?.user.id;
+       //* 轉換成寫入需求格式
+       const arrayBuffer = await chunk.arrayBuffer();
+       const bufferData = Buffer.from(arrayBuffer);
+       //create merge slice directory
+       const fileNameParse = path.parse(pictureName);
+-      //* 建立檔名fileName資料夾 `${index}-${secondIndex}-${fileindex}`-fileName
++      //~ 建立檔名fileName資料夾儲存分片 fileName-`${index}-${secondIndex}-${fileindex}`
++      //* 建立檔案專屬分片資料夾
+       const fileDirName = photoNumber + "-" + fileNameParse.name;
+       //* userDir -> uuidDir -> fileDir
++      //* 圖片專屬分片資料夾
+       const fileDirPath = path.join(
+         process.cwd(),
+         "src",
+@@ -69,6 +72,7 @@ export async function POST(req: NextRequest) {
+         fileDirName
+       );
+       console.log("fileDirPath路徑:" + fileDirPath);
++      //~ 創建分片資料夾
+       async function checkDirectory(dirPath: string) {
+         try {
+           await fs.access(dirPath); //查找是否有該位置
+@@ -79,18 +83,22 @@ export async function POST(req: NextRequest) {
+         }
+       }
+ 
+-      checkDirectory(fileDirPath);
++      await checkDirectory(fileDirPath);
++      //~ 創建分片資料夾
+ 
++      //~ 建立分片檔案名
+       //* create slice file name
+       //* fileDir -> fileSilce
+       const fileSliceName = path.join(
+         fileDirPath,
+-        `%{fileName}-SliceIndex:${SliceIndex}-totalChunks:${totalChunks}-photoNumber:${photoNumber}`
++        `${fileNameParse.name}-SliceIndex_${SliceIndex}-totalChunks_${totalChunks}-photoNumber_${photoNumber}`
+       );
++      //+ 分片檔案名路徑後儲存
+       console.log("fileSliceName路徑:" + fileDirPath);
+-      fs.writeFile(fileSliceName, bufferData);
++      await fs.writeFile(fileSliceName, bufferData);
++      //~ 建立分片檔案名
+ 
+-      //* 檢查目錄數量 返回該fileName Dirctory內所有檔名
++      //~ 檢查分片資料夾數量 返回該fileName Dirctory內所有檔名
+       const filesNameArray = await fs.readdir(fileDirPath);
+       //* 確認檔案是不是檔案 返回檔案名  及 ( 是否為檔案 值為bollean )
+       const fileStats = await Promise.all(
+@@ -101,31 +109,39 @@ export async function POST(req: NextRequest) {
+           return { name: file, isFile: stats.isFile() };
+         })
+       );
++      console.log("filesNameArray.length:", filesNameArray);
+ 
+-      //* 確認是否為檔案
++      //* 確認是否為檔案 返回名稱陣列
+       const isSliceData = fileStats
+         .filter((fileChck) => {
+-          return fileChck.isFile;
++          return fileChck.isFile == true;
+         })
+         .map((f) => f.name);
++      console.log("isSliceData.length:", isSliceData);
+ 
+       //* 過濾空值 讀取fileName 及 分片號碼
+       const fileNameAndIndex = isSliceData
+         .map((fileName) => {
+           const regex =
+-            /^(.*?)-SliceIndex:(\d+)-totalChunks:(\d+)-photoNumber:(\d+)/;
++            /^(.*?)-SliceIndex_(\d+)-totalChunks_(\d+)-photoNumber_(\d+)/;
+           const match = fileName.match(regex);
+           if (!match) return null;
+           return {
+-            name: match[1],
++            name: fileName,
+             SliceIndex: parseInt(match[2], 10),
+           };
+         })
+         .filter((fileList) => fileList != null);
+ 
+       //* 資料夾數量==總分片量就合併
++      console.log("啟動所有分片合併後儲存之前的數字檢查--");
++      console.log(fileNameAndIndex.length);
++      console.log(Number(totalChunks));
++      console.log(fileNameAndIndex.length == Number(totalChunks));
++
+       if (fileNameAndIndex.length == Number(totalChunks)) {
+         //* 整理順序準備合併 sort and prepare for merging
++        console.log("--app api quoteUpload uploadImage 啟動分片合併並儲存--");
+         const sortFiles = fileNameAndIndex
+           .sort((a, b) => a.SliceIndex - b.SliceIndex)
+           .map((file) => {
+@@ -133,10 +149,12 @@ export async function POST(req: NextRequest) {
+           });
+ 
+         console.log(`資料夾中共有 ${fileNameAndIndex.length} 個檔案`);
++        console.dir(fileNameAndIndex, { depth: null });
+ 
+         //* 建立檔案名稱 在前端的嵌套結構位置+檔名 `${index}-${secondIndex}-${fileindex}`-fileName.jpg
+         const fileName = photoNumber + "-" + fileNameParse.base;
+         //* userID -> uuidDir -> file.jpg
++        //* 在UUID資料夾建立檔案名
+         const filePath = path.join(
+           process.cwd(),
+           "src",
+@@ -147,31 +165,90 @@ export async function POST(req: NextRequest) {
+           fileName
+         );
+ 
+-        const writeStream = createWriteStream(fileDirPath);
+-
+-        for (const name of sortFiles) {
+-          const slicePath = path.join(filePath, name);
+-          await new Promise<void>((resolve, reject) => {
++        const writeStream = createWriteStream(filePath);
++        try {
++          for (const name of sortFiles) {
++            const slicePath = path.join(fileDirPath, name);
+             const readStream = createReadStream(slicePath);
+-            readStream.pipe(writeStream, { end: false });
+-            readStream.on("end", () => {
+-              resolve();
++            // await pipeline(readStream, writeStream);
++            await new Promise((resolve, reject) => {
++              readStream.on("error", reject);
++              readStream.pipe(writeStream, { end: false });
++              readStream.on("end", () => {
++                readStream.close();
++                resolve(null);
++              });
+             });
+-            readStream.on("error", reject);
++          }
++          // 正確關閉 writeStream
++
++          writeStream.end();
++          await new Promise<void>((resolve) => {
++            writeStream.on("close", resolve);
+           });
+-        }
+ 
+-        writeStream.end();
+-        //* 刪了儲存資料夾的分片
+-        //* userDir -> uuidDir -> fileDir
+-        fs.rm(fileDirPath, { recursive: true, force: true });
++          // 延迟一段时间确保所有文件句柄释放（Windows需要）
++          await new Promise((resolve) => setTimeout(resolve, 100));
++
++          // writeStream.end();
++          // await finished(writeStream);
++          //* 刪除分片資料夾
++          //* userDir -> uuidDir -> fileDir
++          // console.log("準備刪除分片資料夾:", fileDirPath);
++          // await fs.rm(fileDirPath, { recursive: true, force: true });
++          // console.log("已刪除!!:", fileDirPath);
++          // 尝试删除分片文件夹
++          let retryCount = 0;
++          const maxRetries = 5;
+ 
+-        return NextResponse.json({ message: "ok" }, { status: 400 });
++          while (retryCount < maxRetries) {
++            try {
++              console.log(
++                `尝试删除分片文件夹 (尝试 ${retryCount + 1}/${maxRetries}):`,
++                fileDirPath
++              );
++              await fs.rm(fileDirPath, { recursive: true, force: true });
++              console.log("已成功删除:", fileDirPath);
++              break;
++            } catch (deleteError) {
++              retryCount++;
++              if (retryCount >= maxRetries) {
++                console.error(
++                  "删除文件夹失败，已达到最大重试次数:",
++                  deleteError
++                );
++                // 可以选择记录错误但不中断流程
++                break;
++              }
++              // 等待一段时间后重试
++              await new Promise((resolve) =>
++                setTimeout(resolve, 200 * retryCount)
++              );
++            }
++          }
++        } catch (error) {
++          console.error("readWriteStreamError", error);
++          writeStream.destroy();
++        }
++
++        return NextResponse.json({ message: "ok" }, { status: 200 });
++      } else {
++        console.log("Cannot merge files at this time");
++        console.log(
++          `currentSliceIndex:${SliceIndex},totalChunks:${totalChunks}`
++        );
++        return NextResponse.json(
++          {
++            message:
++              "The files cannot be mergeed because the required number has not been reached",
++          },
++          { status: 200 }
++        );
+       }
+     } else {
+-      return NextResponse.json({ message: "sever error" }, { status: 400 });
++      console.error("資料驗證錯誤");
++      return NextResponse.json({ message: "Invalid input" }, { status: 400 });
+     }
+-    return NextResponse.json({ message: "sever error" }, { status: 400 });
+   } catch (error) {
+     console.error(error);
+     return NextResponse.json({ message: "sever error" }, { status: 500 });
+diff --git a/app/api/register/route.ts b/app/api/register/route.ts
+index 9b3db03..4064ee8 100644
+--- a/app/api/register/route.ts
++++ b/app/api/register/route.ts
+@@ -87,7 +87,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
+       }
+ 
+       await userRepository.save(newUser); //儲存資料
+-      return NextResponse.redirect("/signin");
++
++      const url = req.nextUrl.clone();
++      url.pathname = "/signin";
++      return NextResponse.redirect(url);
+       //~驗證碼驗證過後註冊帳號
+     } else {
+       console.error("驗證碼驗證錯誤" + email);
+diff --git a/app/quote/page.tsx b/app/quote/page.tsx
+index bd9d962..b806a66 100644
+--- a/app/quote/page.tsx
++++ b/app/quote/page.tsx
+@@ -15,14 +15,19 @@ const repairPage: React.FC = () => {
+   //~----前言開關-----
+   const [page, setPage] = useState<string>("newQuote");
+ 
+-  const pageNavigate = (currentPage: String) => {
+-    if (page != currentPage && currentPage) setPage(page);
++  const pageNavigate = (currentPage: string) => {
++    // console.log(page);
++    // console.log(currentPage);
++    // console.log(page === currentPage);
++    // console.log(page !== currentPage);
++    if (page !== currentPage) setPage(currentPage);
+   };
+ 
+   const { data, status } = useSession();
+-
++  // console.log("使用者資料驗證");
++  // console.dir(data, { depth: null });
+   return (
+-    <div className="flex flex-col  justify-center w-full sm:w-[90%]  min-h-screen ">
++    <div className="flex flex-col w-full mt-2 sm:w-[90%]   min-h-screen ">
+       {"unauthenticated" === status ? (
+         <div className="flex flex-col items-center m-2">
+           <div className="m-2 p-1 ">使用報價系統請先登入</div>
+@@ -82,7 +87,7 @@ const repairPage: React.FC = () => {
+                   歷史估價
+                 </button>
+                 <button
+-                  onClick={() => pageNavigate("newQChangePassworduote")}
++                  onClick={() => pageNavigate("ChangePassword")}
+                   className="p-1 m-1 border-2 border-gray-900 rounded-lg shadow"
+                 >
+                   修改密碼
+@@ -95,10 +100,10 @@ const repairPage: React.FC = () => {
+                 </button>
+               </div>
+             </div>
+-            <div className="text-center  sm:w-4/5  bg-gray-100 ">
++            <div className="flex justify-center items-center text-center  sm:w-4/5  bg-gray-100 ">
+               {page === "newQuote" && <NewQuote />}
+-              {page === "ChangePassword" && <ChangePassword />}
+               {page === "QuoteTableServer" && <QuoteTableServer />}
++              {page === "ChangePassword" && <ChangePassword />}
+             </div>
+           </div>
+         </>
+diff --git a/app/register/page.tsx b/app/register/page.tsx
+index fee0aef..5f0b4c0 100644
+--- a/app/register/page.tsx
++++ b/app/register/page.tsx
+@@ -128,13 +128,13 @@ const register: React.FC = () => {
+   }, [password, confirmPassword]);
+ 
+   //*驗證信後端寄出彈窗
+-  // useEffect(() => {
+-  //   setTimeout(() => {
+-  //     if (showToast) {
+-  //       setshowToast(false);
+-  //     }
+-  //   }, 4000);
+-  // }, [showToast]);
++  useEffect(() => {
++    setTimeout(() => {
++      if (showToast) {
++        setshowToast(false);
++      }
++    }, 6000);
++  }, [showToast]);
+ 
+   //*寄出驗證信
+   const emailAuthentication = async () => {
+@@ -206,11 +206,14 @@ const register: React.FC = () => {
+           const serverResponse = await response.json();
+           console.error(serverResponse.message);
+           setshowToastColor(false);
+-          setverificationMessage("伺服器內部錯誤，請重新送出");
++          setverificationMessage("伺服器錯誤，請重新送出");
+           setshowToast(true);
+         }
+       } catch (error) {
+         console.error("register page error on registerOnload function:", error);
++        setshowToastColor(false);
++        setverificationMessage("伺服器錯誤，請重新送出");
++        setshowToast(true);
+       }
+     } else {
+       //視窗震動
+@@ -253,13 +256,6 @@ const register: React.FC = () => {
+   };
+ 
+   //關閉視窗震動 動畫啟動在送出表單
+-  const openbutton = () => {
+-    setshowToast(true);
+-  };
+-
+-  const closebutton = () => {
+-    setshowToast(false);
+-  };
+ 
+   return (
+     <div className="flex flex-col items-center  mx-auto sm:w-[80%] m-5 ">
+@@ -270,19 +266,21 @@ const register: React.FC = () => {
+           border-2 
+           ${showToast ? "toast-show" : "toast"}
+         ` */}
+-      <button onClick={openbutton}>wefwefewf</button>
+-      <button onClick={closebutton}>wefwefewf</button>
++
+       {
+         <div
+           className={` 
+-         bg-red-500
+-           transition-all duration-1000 ease-in-out 
++            ${showToastColor ? "bg-green-400" : "bg-red-500"}
++         
++           transition-all duration-500 ease-in-out 
+            transform origin-top
+-                      overflow-hidden h-0
++            rounded-lg px-2
++            shadow
++            overflow-hidden border-black border-2
++            ${showToast ? " scale-100 visible" : " scale-0 invisible"}
+           `}
+         >
+-          {/* {verificationMessage} */}
+-          123
++          {verificationMessage}
+         </div>
+       }
+       {isClient && (
+@@ -402,7 +400,7 @@ const register: React.FC = () => {
+             <button
+               type="button"
+               onClick={registerOnload}
+-              className="flex justify-center bg-green-400 rounded-lg mx-auto w-16 mt-1 shadow"
++              className="flex justify-center bg-green-400 rounded-lg mx-auto w-16 mt-1 shadow border-black border-2"
+             >
+               送出
+             </button>
+diff --git a/app/signin/page.tsx b/app/signin/page.tsx
+index ddda667..ced1477 100644
+--- a/app/signin/page.tsx
++++ b/app/signin/page.tsx
+@@ -197,7 +197,7 @@ const ComponentName: React.FC = () => {
+           {" "}
+           <div className="w-[80%] sm:w-[50%] mx-auto  ">
+             <button
+-              onClick={() => signIn("google")}
++              onClick={() => signIn("google", { callbackUrl: "/" })}
+               type="button"
+               className="rounded-full bg-red-700 p-0 w-full transition-transform duration-100 ease-in-out transform active:scale-98 active:shadow-lg"
+             >
+diff --git a/app/testpage/page.tsx b/app/testpage/page.tsx
+index cc2384e..935a1b9 100644
+--- a/app/testpage/page.tsx
++++ b/app/testpage/page.tsx
+@@ -1,21 +1,214 @@
+-"use client"; // components/ToastTest.tsx
+-import { useState, useRef, useEffect } from "react";
+-
+-export default function ToastTest() {
+-  const [show, setShow] = useState(false);
+-  const toastRef = useRef<HTMLDivElement>(null);
++"use client";
++import Image from "next/image";
++import { lazy, useEffect, useMemo, useState } from "react";
++import URLImage from "@/components/image/URLImg";
++import ButtonModule from "@/components/button/ButtonModule";
++interface Order {
++  id: number;
++  createdAt: string;
++  state: string;
++  UUID: string;
++  conditionerSelectedOption: string[];
++  brands: string;
++  remarks: string;
++  userid: number;
++}
+ 
+-  const toggle = () => {
+-    setShow(!show);
++const UserQuote = ({
++  isLoading,
++  data,
++  setFunctionSwitch,
++  UUID,
++  quoteData,
++}: {
++  isLoading: boolean;
++  data: string[] | null;
++  // data: any;
++  setFunctionSwitch: React.Dispatch<React.SetStateAction<string>>;
++  quoteData: Order | null;
++  UUID: string;
++}) => {
++  //* 回到歷史報價單表格
++  const backToQuoteTable = () => {
++    setFunctionSwitch("QuoteTable");
+   };
+ 
+-  // 強制瀏覽器在 show 變化時觸發 reflow
++  if (isLoading) return <div>資料載入中...</div>;
++
++  console.log("quoteData:");
++  console.log(quoteData);
++  if (!quoteData)
++    return (
++      <>
++        <div className="text-red-500 text-xl">查無歷史資料</div>
++        <button onClick={backToQuoteTable}>回到報價單目錄</button>
++      </>
++    );
++
++  console.log("data:");
++  console.log(data);
++
++  if (!data) {
++    return (
++      <>
++        <button onClick={backToQuoteTable}>回到報價單目錄</button>
++        <div>查無資料</div>
++      </>
++    );
++    //! 改為錯誤頁面 確認後返回報價單
++  }
++
++  //~ 將陣列字串依照名稱套入循環陣列中
++  //* 將陣列字串依照名稱套入循環陣列中
++  const [imageArray, setImageArray] = useState<(string[] | null)[][]>([
++    [null, null],
++  ]);
++
++  const groupedImages = useMemo(() => {
++    const images: string[] = data;
++    const result: (string[] | null)[][] = [[null, null]];
++
++    images.forEach((image) => {
++      const [firstIndex, secondIndex, fileIndex] = image.split("-").map(Number);
++
++      if (!result[firstIndex]) {
++        result[firstIndex] = [];
++      }
++      if (!result[firstIndex][secondIndex]) {
++        result[firstIndex][secondIndex] = [];
++      }
++      result[firstIndex][secondIndex][fileIndex] = image;
++    });
++
++    return result;
++  }, [data]);
++
+   useEffect(() => {
+-    if (show && toastRef.current) {
+-      // 強制 layout 計算，確保動畫從 scaleY(0) 開始
+-      toastRef.current.getBoundingClientRect();
+-    }
+-  }, [show]);
++    setImageArray(groupedImages);
++  }, [groupedImages]);
++  //~ 將陣列字串依照名稱套入循環陣列中
+ 
+-  return <div className="scale-y-0">Test</div>;
+-}
++  return (
++    <div className="p-4">
++      <ButtonModule onClick={backToQuoteTable} size="md" className="m-2">
++        <svg
++          xmlns="http://www.w3.org/2000/svg"
++          fill="none"
++          viewBox="0 0 24 24"
++          strokeWidth={1.5}
++          stroke="currentColor"
++          className="w-5 h-5 mr-2"
++        >
++          <path
++            strokeLinecap="round"
++            strokeLinejoin="round"
++            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
++          />
++        </svg>
++        回到報價單目錄
++      </ButtonModule>
++      <div className="border-2 border-gray-800 rounded-lg mt-4 bg-webGreenToBrown-400">
++        <div className="mt-1 w-full border-b-2 border-gray-800">
++          <h1 className=" border-b-2 border-gray-800">需要報價的品牌</h1>
++          <ul className="bg-white">
++            {quoteData.conditionerSelectedOption.map(
++              (option: string, index) => (
++                <li key={`conditionerSelectedOption:${index}`}>{option}</li>
++              )
++            )}
++          </ul>
++          {quoteData.brands == "" ? null : (
++            <>
++              <div className=" border-y-2 border-gray-800 ">額外的品牌需求</div>
++              <div className="bg-white">{quoteData.brands}</div>
++            </>
++          )}
++
++          <div>
++            <div className=" border-y-2 border-gray-800 ">報價需求</div>
++            <div className="bg-white">{quoteData.remarks}</div>
++          </div>
++        </div>
++
++        <div className="p-4">
++          {/* 組別 */}
++          {imageArray.map((firstIndex, index) => {
++            if (Array.isArray(firstIndex)) {
++              {
++                /* 內外 */
++                return (
++                  <>
++                    <div className="">第{index + 1}組內外機照片</div>;
++                    <div className="border-b-2 border-gray-400">內機</div>
++                    {firstIndex[0] &&
++                      firstIndex[0].map((fileName) => {
++                        if (typeof fileName === "string") {
++                          const params = new URLSearchParams();
++                          params.append("userQuoteUUID", UUID);
++                          params.append("fileName", fileName);
++                          // return <div>{`${fileName}`}</div>;
++                          return (
++                            <div
++                              className={`w-[50%]  `}
++                              key={`secondIndex-${fileName}`}
++                            >
++                              <URLImage
++                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
++                                loading="lazy"
++                                onError={(e) => {
++                                  console.log("URLImage error");
++                                  console.log(e);
++                                }}
++                                alt={fileName}
++                                key={fileName}
++                                fill
++                                className="overflow-hidden rounded-lg"
++                              />
++                            </div>
++                          );
++                        }
++                        return null;
++                      })}
++                    <div className="border-b-2 border-gray-400">外機</div>
++                    {firstIndex[1] &&
++                      firstIndex[1].map((fileName) => {
++                        if (typeof fileName === "string") {
++                          const params = new URLSearchParams();
++                          params.append("userQuoteUUID", UUID);
++                          params.append("fileName", fileName);
++                          // return <div>{`${fileName}`}</div>;
++                          return (
++                            <div
++                              className={`w-[50%]  `}
++                              key={`secondIndex-${fileName}`}
++                            >
++                              <URLImage
++                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
++                                loading="lazy"
++                                onError={(e) => {
++                                  console.log("URLImage error");
++                                  console.log(e);
++                                }}
++                                alt={fileName}
++                                key={fileName}
++                                fill
++                                className="overflow-hidden rounded-lg"
++                              />
++                            </div>
++                          );
++                        }
++                        return null;
++                      })}
++                  </>
++                );
++              }
++            }
++            return null;
++          })}
++        </div>
++      </div>
++    </div>
++  );
++};
++
++export default UserQuote;
+diff --git a/next.config.mjs b/next.config.mjs
+index e558f76..29b390c 100644
+--- a/next.config.mjs
++++ b/next.config.mjs
+@@ -16,7 +16,17 @@ export default {
+ 
+     return config;
+   },
+-
++  images: {
++    domains: ["localhost"], // 添加localhost到允许的主机名
++    remotePatterns: [
++      {
++        protocol: "http",
++        hostname: "localhost",
++        port: "3000",
++        pathname: "/api/**",
++      },
++    ],
++  },
+   // 启用 React 严格模式
+   reactStrictMode: true,
+   eslint: {
+diff --git a/package.json b/package.json
+index 60ef31f..b2c0405 100644
+--- a/package.json
++++ b/package.json
+@@ -46,24 +46,22 @@
+   },
+   "devDependencies": {
+     "@next/eslint-plugin-next": "15.3.1",
+-    "@tailwindcss/cli": "4.1.4",
+-    "@tailwindcss/postcss": "4.1.4",
+     "@types/bcrypt": "^5.0.2",
+     "@types/js-cookie": "^3.0.6",
+     "@types/node": "^20.17.30",
+     "@types/react": "^19.1.2",
+     "@types/react-dom": "^19.1.2",
+     "@types/validator": "13.12.2",
+-    "autoprefixer": "10.4.16",
++    "autoprefixer": "10.4.17",
+     "eslint": "^9.25.1",
+     "eslint-config-next": "15.3.1",
+     "eslint-config-prettier": "10.1.2",
+     "eslint-plugin-jsx-a11y": "^6.9.0",
+     "eslint-plugin-prettier": "^5.2.1",
+     "eslint-plugin-react": "^7.35.0",
+-    "postcss": "8.4.35",
++    "postcss": "8.4.38",
+     "prettier": "^3.3.3",
+-    "tailwindcss": "3.4.1",
++    "tailwindcss": "3.4.4",
+     "ts-node": "^10.9.2",
+     "typescript": "^5.5.4"
+   }
+diff --git a/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-0-0-pexels-mali-110820.jpg b/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-0-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-0-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-1-0-pexels-mali-110820.jpg b/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-1-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/22344ba7-f893-4087-b082-f0a1ff89695a/0-1-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-0-0-pexels-mali-110820.jpg b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-0-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-0-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg
+new file mode 100644
+index 0000000..2254684
+Binary files /dev/null and b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg differ
+diff --git a/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-0-0-pexels-chris-f-38966-33494386.jpg b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-0-0-pexels-chris-f-38966-33494386.jpg
+new file mode 100644
+index 0000000..11d8c16
+Binary files /dev/null and b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-0-0-pexels-chris-f-38966-33494386.jpg differ
+diff --git a/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-1-0-pexels-botanphotography-29738142.jpg b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-1-0-pexels-botanphotography-29738142.jpg
+new file mode 100644
+index 0000000..4a0eaa7
+Binary files /dev/null and b/src/Data/User/2/27650b7d-a848-477a-9515-bbb3e9f3a254/1-1-0-pexels-botanphotography-29738142.jpg differ
+diff --git a/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-0-0-pexels-mali-110820.jpg b/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-0-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-0-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-1-0-pexels-mali-110820.jpg b/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-1-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/4e963d33-ed83-419f-a7e0-22fb9ac9bb9e/0-1-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-0-0-pexels-mali-110820.jpg b/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-0-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-0-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-1-0-pexels-mali-110820.jpg b/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-1-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/a7c0c154-8a24-4964-836e-2d402af0905d/0-1-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-0-0-pexels-mali-110820.jpg b/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-0-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-0-0-pexels-mali-110820.jpg differ
+diff --git a/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg b/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg
+new file mode 100644
+index 0000000..2254684
+Binary files /dev/null and b/src/Data/User/2/c93487fe-375f-4ac0-a6c3-3dc8ab4e1e7c/0-1-0-pexels-jeremy-bishop-1260133-3464632.jpg differ
+diff --git a/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-0-0-pexels-jeremy-bishop-1260133-3464632.jpg b/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-0-0-pexels-jeremy-bishop-1260133-3464632.jpg
+new file mode 100644
+index 0000000..2254684
+Binary files /dev/null and b/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-0-0-pexels-jeremy-bishop-1260133-3464632.jpg differ
+diff --git a/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-1-0-pexels-mali-110820.jpg b/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-1-0-pexels-mali-110820.jpg
+new file mode 100644
+index 0000000..091fbe9
+Binary files /dev/null and b/src/Data/User/2/cf5d0054-b39e-48c2-a8a6-f26c246b4ea8/0-1-0-pexels-mali-110820.jpg differ
+diff --git a/src/backend/entities/User.ts b/src/backend/entities/User.ts
+index 2e7d88b..b484fdb 100644
+--- a/src/backend/entities/User.ts
++++ b/src/backend/entities/User.ts
+@@ -9,6 +9,7 @@ import {
+ import { IsEmail, Length, Matches } from "class-validator";
+ import { oauth2List } from "@/backend/entities/oauth2List";
+ import { userQuote } from "@/backend/entities/userQuote";
++// import type  userQuote from "./userQuote";
+ @Entity()
+ export class User {
+   @PrimaryGeneratedColumn()
+@@ -33,11 +34,7 @@ export class User {
+   })
+   email: string = "";
+ 
+-  @Column({ type: "varchar", nullable: true })
+-  @Length(8, 65)
+-  @Matches(/^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/, {
+-    message: "密碼不合規",
+-  })
++  @Column({ type: "varchar", length: 70, nullable: true })
+   password: string = "";
+ 
+   @OneToMany(() => oauth2List, (oauth2List) => oauth2List.user, {
+@@ -47,4 +44,6 @@ export class User {
+ 
+   @OneToMany(() => userQuote, (userQuote) => userQuote.user) //如何放到oatth2儲存
+   userQuote?: userQuote[]; //oauth2 儲存清單
++  // @OneToMany(() => require("./userQuote").userQuote, (quote) => quote.user)
++  // userQuote!: userQuote[];
+ }
+diff --git a/src/backend/entities/userQuote.ts b/src/backend/entities/userQuote.ts
+index 53c1cdf..431650e 100644
+--- a/src/backend/entities/userQuote.ts
++++ b/src/backend/entities/userQuote.ts
+@@ -5,18 +5,21 @@ import {
+   Column,
+   ManyToOne,
+   CreateDateColumn,
++  JoinColumn,
+ } from "typeorm";
+ import {
+   ArrayNotEmpty,
+   IsArray,
+   IsIn,
++  IsNotEmpty,
++  IsNumber,
+   IsString,
+   IsUUID,
+   MaxLength,
+   MinLength,
+ } from "class-validator";
+ import { User } from "@/backend/entities/User";
+-
++// import type { User as userID } from "@/backend/entities/User";
+ @Entity()
+ export class userQuote {
+   @PrimaryGeneratedColumn()
+@@ -25,6 +28,7 @@ export class userQuote {
+ 
+   @Column("uuid") //+ 儲存一般字串
+   @IsUUID("4", { message: "必須是 UUID version 4 格式" })
++  @IsNotEmpty()
+   UUID: string = "";
+ 
+   @Column("text", { array: true }) // 儲存 string[]
+@@ -43,6 +47,7 @@ export class userQuote {
+   @MaxLength(300)
+   @MinLength(10)
+   @IsString()
++  @IsNotEmpty()
+   remarks: string = "";
+ 
+   @Column({
+@@ -51,11 +56,17 @@ export class userQuote {
+     default: "Unfulfilled",
+   })
+   @IsIn(["Fulfilled", "Unfulfilled"])
+-  state: string = "";
++  state: string = "Unfulfilled";
+ 
+   @CreateDateColumn()
+   createdAt!: Date;
+ 
++  @Column()
++  @IsNotEmpty()
++  @IsNumber()
++  userid!: number;
++
+   @ManyToOne(() => User, (user) => user.userQuote) //+  放到user的userQuote
++  @JoinColumn({ name: "userid" })
+   user!: Promise<User>;
+ }
+diff --git a/src/components/ImageUpload.tsx b/src/components/ImageUpload.tsx
+index 8b5d35c..37231a8 100644
+--- a/src/components/ImageUpload.tsx
++++ b/src/components/ImageUpload.tsx
+@@ -240,8 +240,8 @@ const ImageUpload: React.FC<ChildProps> = ({
+                 key={`index-${index}`}
+               >
+                 <div className="border-b-2 border-gray-400">內機</div>
+-                {photoURL[index][1] &&
+-                  photoURL[index][1].map((photo, index2) => (
++                {photoURL[index][0] &&
++                  photoURL[index][0].map((photo, index2) => (
+                     <div
+                       className="w-full"
+                       key={`index-${index}-out1-photo-${index2}`}
+@@ -257,7 +257,7 @@ const ImageUpload: React.FC<ChildProps> = ({
+                       <div className="m-1 p-1">
+                         <button
+                           onClick={() => {
+-                            deleteURLAndFile(index, 1, index2);
++                            deleteURLAndFile(index, 0, index2);
+                           }}
+                           className="m-1 px-1 border-2 border-gray-900 rounded shadow"
+                         >
+@@ -279,15 +279,15 @@ const ImageUpload: React.FC<ChildProps> = ({
+                     id={"group" + index + "-file-" + "1"}
+                     multiple
+                     onChange={(file) => {
+-                      createURLAndSaveFile(file, index, 1);
++                      createURLAndSaveFile(file, index, 0);
+                     }}
+                   ></input>
+                 </div>
+               </div>
+               <div className="border-2 border-gray-950 m-2 p-2 rounded bg-webGreenToBrown-400">
+                 <div className="border-b-2 border-gray-400">外機</div>
+-                {photoURL[index][2] &&
+-                  photoURL[index][2].map((photo, index2) => (
++                {photoURL[index][1] &&
++                  photoURL[index][1].map((photo, index2) => (
+                     <div
+                       className="w-full"
+                       key={`index-${index}-out-2-photo-${index2}`}
+@@ -303,7 +303,7 @@ const ImageUpload: React.FC<ChildProps> = ({
+                       <div className="m-1 p-1">
+                         <button
+                           onClick={() => {
+-                            deleteURLAndFile(index, 2, index2);
++                            deleteURLAndFile(index, 1, index2);
+                           }}
+                           className="m-1 px-1 border-2 border-gray-900 rounded shadow"
+                         >
+@@ -325,7 +325,7 @@ const ImageUpload: React.FC<ChildProps> = ({
+                     style={{ display: "none" }}
+                     id={"group" + index + "-file-" + "2"}
+                     onChange={(file) => {
+-                      createURLAndSaveFile(file, index, 2);
++                      createURLAndSaveFile(file, index, 1);
+                     }}
+                   ></input>
+                 </div>
+@@ -335,7 +335,7 @@ const ImageUpload: React.FC<ChildProps> = ({
+                   <label>
+                     <button
+                       id={"deleteFile" + index}
+-                      className="p-1 m-1 border-2 border-gray-900 rounded-lg shadow"
++                      className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
+                       onClick={() => {
+                         deleteFileButton(index);
+                       }}
+diff --git a/src/components/app/quote/ChangePassword.tsx b/src/components/app/quote/ChangePassword.tsx
+index 7bc4fa7..7398110 100644
+--- a/src/components/app/quote/ChangePassword.tsx
++++ b/src/components/app/quote/ChangePassword.tsx
+@@ -10,7 +10,7 @@ const ChangePassword: React.FC = () => {
+ 
+   const [newPassword, setNewPassword] = useState("");
+ 
+-  const [checkPassword, setcheCkPassword] = useState("");
++  const [checkPassword, setCheckPassword] = useState("");
+   const [severMessage, setSeverMessage] = useState("");
+   //* 確認密碼
+   const [passwordIsVailad, setPasswordIsVailad] = useState<boolean>(true);
+@@ -21,14 +21,19 @@ const ChangePassword: React.FC = () => {
+     const passwordRegex =
+       /^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/;
+     //* 驗證整體密碼
+-    if (passwordRegex.test(newPassword)) {
+-      setPasswordIsVailad(true);
++    if (!newPassword) {
++      setPasswordIsVailad(true); //+ 關閉提示
++
++      return;
++    } else if (passwordRegex.test(newPassword)) {
++      setPasswordIsVailad(true); //+ 關閉提示
++
+       return;
+     } else {
+-      setPasswordIsVailad(false);
++      setPasswordIsVailad(false); //+ 打開提示
+     }
+ 
+-    if (newPassword.length > 30 || newPassword.length < 3) {
++    if (newPassword.length > 30 || newPassword.length < 8) {
+       setPasswordErrorMessage("密碼長度應該 8 到 30 字元之間");
+       return;
+     }
+@@ -62,12 +67,12 @@ const ChangePassword: React.FC = () => {
+   useEffect(() => {
+     const passworVailadTimer = setTimeout(() => {
+       passwordRegexCheck();
+-    }, 1500);
++    }, 900);
+ 
+     return () => {
+       clearTimeout(passworVailadTimer);
+     };
+-  }, [passwordIsVailad]);
++  }, [newPassword]);
+   //~ 密碼驗證
+ 
+   //~ 密碼相同確認
+@@ -76,22 +81,26 @@ const ChangePassword: React.FC = () => {
+ 
+   //* 密碼相同確認
+   const checkPasswordFC = () => {
+-    if (newPassword === checkPassword && newPassword && checkPassword) {
+-      setPasswordIsSame(false);
++    //+ 新密碼 與 確認密碼 相同 ， 排除新舊空字串
++    console.log(newPassword === checkPassword);
++    if (!newPassword && !checkPassword) {
++      setPasswordIsSame(false); //+ 關閉錯誤
++    } else if (newPassword === checkPassword) {
++      setPasswordIsSame(false); //+ 關閉錯誤
+     } else {
+-      setPasswordIsSame(true);
++      setPasswordIsSame(true); //+ 打開錯誤
+     }
+   };
+ 
+   useEffect(() => {
+     const timer = setTimeout(() => {
+       checkPasswordFC();
+-    }, 1500);
++    }, 900);
+ 
+     return () => {
+       clearTimeout(timer);
+     };
+-  }, [checkPassword]);
++  }, [checkPassword, newPassword]);
+   //~ 密碼相同確認
+ 
+   //* 提交表單
+@@ -136,47 +145,78 @@ const ChangePassword: React.FC = () => {
+   const [passwordCheck, setPasswordCheck] = useState<Boolean>(false);
+ 
+   return (
+-    <div>
++    <div className="mt-2">
+       {severMessage ? severMessage : null}
+-      <form onSubmit={submitTheForm}>
+-        <label htmlFor="password">
++      <form
++        onSubmit={submitTheForm}
++        className="grid grid-cols-[auto,1fr] grid-rows-7"
++      >
++        <label
++          htmlFor="password"
++          className="my-1 flex items-center justify-center"
++        >
+           輸入密碼:
+-          <input
+-            type="text"
+-            id="password"
+-            onChange={(e) => setCurrentPassword(e.target.value)}
+-          />
+         </label>
+-        <label htmlFor="newPassword">
++        <input
++          type="text"
++          id="password"
++          onChange={(e) => setCurrentPassword(e.target.value)}
++          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
++         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
++         focus:border-blue-500 sm:text-sm  my-1 mx-2"
++        />
++
++        <label
++          htmlFor="newPassword"
++          className="my-1 flex items-center justify-center"
++        >
+           輸入新密碼:
+-          <input
+-            type="text"
+-            id="newPassword"
+-            onChange={(e) => setNewPassword(e.target.value)}
+-          />
+         </label>
++        <input
++          type="text"
++          id="newPassword"
++          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
++         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
++         focus:border-blue-500 sm:text-sm my-1 mx-2"
++          onChange={(e) => setNewPassword(e.target.value)}
++        />
+         {passwordIsVailad ? null : (
+-          <div className=" text-red-600 ">{passwordErrorMessage}</div>
++          <div className=" text-red-600 col-span-2">{passwordErrorMessage}</div>
+         )}
+-        <label htmlFor="confirmPassword">
++
++        <label
++          htmlFor="confirmPassword"
++          className="my-1 flex items-center justify-center"
++        >
+           再次輸入新密碼:
+-          <input
+-            type="text"
+-            id="confirmPassword"
+-            onChange={(e) => {
+-              setcheCkPassword(e.target.value);
+-            }}
+-          />
+         </label>
++        <input
++          type="text"
++          id="confirmPassword"
++          onChange={(e) => {
++            setCheckPassword(e.target.value);
++          }}
++          className=" leading-3 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
++         placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 
++         focus:border-blue-500 sm:text-sm my-1 mx-2"
++        />
+         {passwordIsSame ? (
+-          <div className=" text-red-600 ">新密碼和確認新密碼不相同</div>
++          <div className=" text-red-600 col-span-2 flex items-center justify-center">
++            新密碼和確認新密碼不相同
++          </div>
+         ) : null}
+         {passwordCheck ? (
+-          <div className=" text-red-600 ">
++          <div className=" text-red-600 col-span-2 flex items-center justify-center">
+             請重新確認舊密碼和密碼是否符合需求
+           </div>
+         ) : null}
+-        <button type="submit">送出</button>
++
++        <button
++          type="submit"
++          className="col-span-2 my-3 mx-auto px-2 bg-green-300 rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-blue-500"
++        >
++          送出
++        </button>
+       </form>
+     </div>
+   );
+diff --git a/src/components/app/quote/NewQuote.tsx b/src/components/app/quote/NewQuote.tsx
+index 3aa7c3f..21c4caa 100644
+--- a/src/components/app/quote/NewQuote.tsx
++++ b/src/components/app/quote/NewQuote.tsx
+@@ -17,29 +17,33 @@ interface uploadFileWithWorker {
+ //* 上傳分片到webWorker
+ function uploadFileWithWorker(
+   uploadFileWithWorker: uploadFileWithWorker,
+-  worker: Worker
++  worker: Worker,
++  dispatch: ReturnType<typeof useAppDispatch>
+ ): Promise<{ success: boolean }> {
+   return new Promise((resolve, reject) => {
+-    const dispatch = useAppDispatch();
++    // const dispatch = useAppDispatch();
+     worker.postMessage(uploadFileWithWorker);
+     worker.onmessage = (event) => {
+-      const { success, progress } = event.data;
++      const { success, progress, message } = event.data;
+       switch (success) {
+         case "uploading":
+           //設定進度
+-          dispatch(setFileUploadPercentage(progress));
+           console.log("進度上傳");
++          dispatch(setFileUploadPercentage(progress));
+           break;
+         case "failure":
+           //進度取消
+-          dispatch(setUploadState("上傳失敗"));
+           console.log("進度取消");
++          if (message) {
++            console.dir(message, { depth: null });
++          }
++          dispatch(setUploadState("上傳失敗"));
+           reject({ success: false });
+           break;
+         case "success":
+           //總進度完成+1
+-          resolve({ success: true });
+           console.log("進度完成");
++          resolve({ success: true });
+           break;
+         default:
+           console.log("進度穿透");
+@@ -47,8 +51,9 @@ function uploadFileWithWorker(
+           break;
+       }
+     };
+-    worker.onerror = () => {
++    worker.onerror = (e) => {
+       console.error("Worker error");
++      console.dir(e, { depth: null });
+       dispatch(setUploadState("上傳失敗"));
+       reject({ success: false });
+     };
+@@ -69,10 +74,14 @@ const NewQuote: React.FC = () => {
+   //* 檢查錯誤後函式推入列隊
+   //* 創建UUID,worker
+   //* 導出總照片數量、上傳陣列
+-  async function fileSequentially(fileUUID: string, worker: Worker) {
++  async function fileSequentially(
++    fileUUID: string,
++    worker: Worker,
++    dispatch: ReturnType<typeof useAppDispatch>
++  ): Promise<{ uploadQueue: Array<() => Promise<{ success: boolean }>> }> {
+     const UUID = fileUUID;
+     const uploadQueue: (() => Promise<{ success: boolean }>)[] = [];
+-
++    console.dir(photoFile, { depth: null });
+     //* 第一層 選組別
+     for (const [index, firstNested] of photoFile.entries()) {
+       if (index < 4) {
+@@ -81,12 +90,13 @@ const NewQuote: React.FC = () => {
+         for (const [secondIndex, secondNested] of firstNested.entries()) {
+           if (!secondNested || secondNested.length == 0) {
+             //+ 如果內外機沒有輸入或為空,返回空數組
++            console.log("如果內外機沒有輸入或為空,返回空數組");
+             return { uploadQueue: [] };
+           }
+ 
+           if (secondIndex < 2) {
+             //+ 內外機最多只有兩組別
+-            //* 第三層 選相片
++            //* 第三層 遍歷相片
+             for (const [fileindex, file] of secondNested.entries()) {
+               if (fileindex < 2) {
+                 //+ 照片最大2張
+@@ -98,7 +108,8 @@ const NewQuote: React.FC = () => {
+                 };
+                 //+ 推入上傳列隊 準備上傳
+                 uploadQueue.push(() => {
+-                  return uploadFileWithWorker(props, worker);
++                  console.log("推入上傳列隊 準備上傳");
++                  return uploadFileWithWorker(props, worker, dispatch);
+                 });
+               }
+             }
+@@ -106,6 +117,7 @@ const NewQuote: React.FC = () => {
+         }
+       }
+     }
++    console.log("送出數組結果");
+     return { uploadQueue };
+   }
+   //* 簡易認證文字表單
+@@ -116,15 +128,16 @@ const NewQuote: React.FC = () => {
+       remarks.length <= 300 &&
+       remarks.length >= 10
+     ) {
++      console.log("easyFormWordCheck 驗證成功");
+       return true;
+     }
+-
++    console.log("easyFormWordCheck 驗證失敗");
+     return false;
+   }
+   //子組件上移
+ 
+   const [remarks, setRemarks] = useState("");
+-  const [brands, setBands] = useState("");
++  const [brands, setBrands] = useState("");
+   //----日曬checkbox-----
+   // const [selectedOption, setSelectedOption] = useState<string>("no");
+   // const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+@@ -238,19 +251,22 @@ const NewQuote: React.FC = () => {
+   //回復完成結果
+ 
+   // const { data: session, status } = useSession();
+-
++  const dispatch = useAppDispatch();
+   const dataUpload = async () => {
++    let worker: Worker | null = null;
++
+     try {
+       console.log("開始上傳");
+       const UUID = crypto.randomUUID();
+       const upload = { UUID, conditionerSelectedOption, brands, remarks };
+-      const worker = new Worker(
++      worker = new Worker(
+         new URL("@/utils/webWorker/fileUpload.ts", import.meta.url)
+       );
+-
+       //* 驗證圖片數量，返回圖片總量、待上傳異步陣列，傳入UUID
+-      const imageCheck = await fileSequentially(UUID, worker);
+-      if (imageCheck.uploadQueue.length == null) {
++      const imageCheck = await fileSequentially(UUID, worker, dispatch);
++      console.dir(imageCheck, { depth: null });
++      if (imageCheck.uploadQueue.length == 0) {
++        console.log("mageCheck.uploadQueue 長度為空");
+         return;
+       }
+       const imageArray = imageCheck.uploadQueue;
+@@ -265,13 +281,12 @@ const NewQuote: React.FC = () => {
+ 
+           {
+             method: "POST",
+-            headers: { "content-type": "applicatiaion/json" },
++            headers: { "content-type": "application/json" },
+             credentials: "include",
+             body: JSON.stringify(upload),
+           }
+         );
+         if (contentUpload.ok) {
+-          const dispatch = useAppDispatch();
+           //+ 定義相片總數
+           dispatch(setFileTotalCount(imageArray.length));
+           //+ 開啟上傳視窗
+@@ -299,17 +314,21 @@ const NewQuote: React.FC = () => {
+           dispatch(setUploadState("上傳完成"));
+         } else {
+           console.error("表單上傳失敗,form upload failed");
+-          const dispatch = useAppDispatch();
++
+           dispatch(setUploadState("上傳失敗"));
+         }
+ 
+         //關閉worker
+-
+-        worker.terminate();
++      } else {
++        console.log("easyFormWordCheck faild");
+       }
+     } catch (error) {
+       console.error("上傳錯誤:", error);
+       return;
++    } finally {
++      if (worker) {
++        worker.terminate();
++      }
+     }
+ 
+     //如果文字表單上傳成功 圖片上傳 啟動分片
+@@ -320,10 +339,10 @@ const NewQuote: React.FC = () => {
+     // }
+   };
+ 
+-  console.log("顯示登入資訊:");
++  // console.log("顯示登入資訊:");
+   // console.dir(session, { depth: null });
+   return (
+-    <div>
++    <div className="w-full">
+       {/*報價品牌*/}
+       <div className="flex flex-col items-center mt-1">
+         <div className="border-gray-400 border-b-2  w-full ">
+@@ -365,7 +384,7 @@ const NewQuote: React.FC = () => {
+             maxLength={60}
+             placeholder="請輸入想要的其他品牌"
+             value={brands}
+-            onChange={(e) => setBands(e.target.value)}
++            onChange={(e) => setBrands(e.target.value)}
+             rows={5}
+             cols={40}
+             className=" m-2 border-2 border-gray-950 rounded resize-y leading-tight shadow"
+diff --git a/src/components/app/quote/QuoteTable/QuoteFunctionSwitch.tsx b/src/components/app/quote/QuoteTable/QuoteFunctionSwitch.tsx
+index 6c7f61e..b9eaba4 100644
+--- a/src/components/app/quote/QuoteTable/QuoteFunctionSwitch.tsx
++++ b/src/components/app/quote/QuoteTable/QuoteFunctionSwitch.tsx
+@@ -3,41 +3,56 @@ import QuoteTable from "@/components/app/quote/QuoteTable/QuoteTable";
+ import UserQuote from "@/components/app/quote/QuoteTable/UserQuote";
+ import { useEffect, useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+-
++import { searchUserQuote } from "./QuoteTableServices";
++interface Order {
++  id: number;
++  createdAt: string;
++  state: string;
++  UUID: string;
++  conditionerSelectedOption: string[];
++  brands: string;
++  remarks: string;
++  userid: number;
++}
+ const QuoteFunctionSwitch: React.FC = () => {
+   const [functionSwitch, setFunctionSwitch] = useState("QuoteTable");
+   const [userUUID, setUserUUID] = useState("");
+-  const [shouldFetch, setShouldFetch] = useState(Boolean);
+-
++  // const [shouldFetch, setShouldFetch] = useState(false);
++  const [quoteData, setQuoteData] = useState<Order | null>(null);
+   //~ 給UserQuote使用
+-  const { data, isLoading, isSuccess } = useQuery({
++  const { data, isLoading } = useQuery({
+     queryKey: ["userQuote", userUUID],
+-    enabled: shouldFetch && !!userUUID,
++    queryFn: () => searchUserQuote(userUUID),
++    enabled: !!userUUID,
+   });
+ 
+-  useEffect(() => {
+-    if (isSuccess && data) {
+-      setShouldFetch(false); // 得到資料後取消資料獲取
+-    }
+-  }, [isSuccess]);
++  // useEffect(() => {
++  //   if (isSuccess && data) {
++  //     setShouldFetch(false); // 得到資料後取消資料獲取
++  //   }
++  // }, [isSuccess, data, ]);
+   //~ 給UserQuote使用
++  console.log("switch");
++  console.dir(data);
+   return (
+-    <>
++    <div>
+       {functionSwitch === "QuoteTable" ? (
+         <QuoteTable
+           setUserUUID={setUserUUID} //* 啟動useQuery 撈資料
+-          setShouldFetch={setShouldFetch} //* 啟動useQuery撈資料
++          // setShouldFetch={setShouldFetch} //* 啟動useQuery撈資料
+           setFunctionSwitch={setFunctionSwitch} //* 目前功能為切換頁面
++          setQuoteData={setQuoteData}
+         ></QuoteTable>
+       ) : (
+         <UserQuote
+           isLoading={isLoading}
+           data={data}
++          quoteData={quoteData}
+           setFunctionSwitch={setFunctionSwitch}
+           UUID={userUUID}
+         ></UserQuote>
+       )}
+-    </>
++    </div>
+   );
+ };
+ 
+diff --git a/src/components/app/quote/QuoteTable/QuoteTable.tsx b/src/components/app/quote/QuoteTable/QuoteTable.tsx
+index 7f71a35..9ba4c07 100644
+--- a/src/components/app/quote/QuoteTable/QuoteTable.tsx
++++ b/src/components/app/quote/QuoteTable/QuoteTable.tsx
+@@ -2,24 +2,31 @@
+ //刷新table
+ 
+ import { useQuery } from "@tanstack/react-query";
+-import React, { useState } from "react";
++import React, { useEffect, useState } from "react";
+ import PaginationBtuuon from "@/components/public/PaginationButton";
+ import { searchUserQuoteTable } from "./QuoteTableServices";
++
+ interface Order {
+   id: number;
+-  date: string;
++  createdAt: string;
+   state: string;
+-  userId: number;
++  UUID: string;
++  conditionerSelectedOption: string[];
++  brands: string;
++  remarks: string;
++  userid: number;
+ }
+ 
+ const QuoteTable = ({
+   setUserUUID,
+-  setShouldFetch,
++  // setShouldFetch,
+   setFunctionSwitch,
++  setQuoteData,
+ }: {
+   setUserUUID: React.Dispatch<React.SetStateAction<string>>;
+-  setShouldFetch: React.Dispatch<React.SetStateAction<boolean>>;
++  // setShouldFetch: React.Dispatch<React.SetStateAction<boolean>>;
+   setFunctionSwitch: React.Dispatch<React.SetStateAction<string>>;
++  setQuoteData: React.Dispatch<React.SetStateAction<Order | null>>;
+ }) => {
+   // const { data: session, status } = useSession();
+ 
+@@ -28,23 +35,31 @@ const QuoteTable = ({
+   // }
+ 
+   //* 查詢指定報價單
+-  const search = async (userQuoteUUId: string) => {
++  const search = async (userQuoteUUId: string, data: Order) => {
++    console.log("測試");
++    console.log(!!userQuoteUUId);
+     //+ 啟動useQury 撈資料
+-    setUserUUID(userQuoteUUId); //+ 傳送UUD給後端查詢
+-    setShouldFetch(true);
++    setUserUUID(userQuoteUUId); //+ 傳送UUD給useQuery,後端查詢
++    setQuoteData(data);
++    // setShouldFetch(true);
++
+     //+ 切換頁面
+     setFunctionSwitch("UserQuote");
+   };
+ 
+-  const [page, setPage] = useState(1);
++  const [page, setPage] = useState<number>(1);
+   const [totalCount, setTotalCount] = useState<number>(0);
+   const [userData, setUserData] = useState<Order[]>([]);
+ 
+   interface Order {
+     id: number;
+     createdAt: string;
+-    state: number;
++    state: string;
+     UUID: string;
++    conditionerSelectedOption: string[];
++    brands: string;
++    remarks: string;
++    userid: number;
+   }
+   interface SearchResponse {
+     data: Order[];
+@@ -56,6 +71,15 @@ const QuoteTable = ({
+     queryFn: () => searchUserQuoteTable(page.toString()),
+   });
+ 
++  useEffect(() => {
++    if (data?.data) {
++      setUserData(data.data);
++    }
++    if (data?.totalCount !== undefined) {
++      setTotalCount(data.totalCount);
++    }
++  }, [data]);
++
+   if (isLoading) {
+     return <div>Loading...</div>;
+   }
+@@ -67,15 +91,16 @@ const QuoteTable = ({
+     data.data.length < 1 ||
+     !data.totalCount
+   ) {
+-    return <div>查無資料</div>;
++    return <div className="text-red-500 text-xl">查無歷史資料</div>;
+   }
+ 
+-  setUserData(data.data);
+-  setTotalCount(data.totalCount);
+   return (
+     <div>
+-      <table>
+-        <thead>
++      <table className="border-2 border-black border-collapse table-auto mt-3 ">
++        <thead
++          className="bg-gray-300 border-2 border-black 
++        [&_td]:border-2 [&_td]:border-black [&_td]:p-1.5 "
++        >
+           <tr>
+             <td>編號</td>
+             <td>建立日期</td>
+@@ -84,13 +109,26 @@ const QuoteTable = ({
+           </tr>
+         </thead>
+         <tbody>
+-          {userData.map((order) => (
+-            <tr>
+-              <td>{order.id}</td>
+-              <td>{new Date(order.createdAt).toLocaleString()}</td>
+-              <td>{order.state}</td>
++          {userData.map((order, index) => (
++            <tr
++              key={`group-${order.id}`}
++              className="even:bg-gray-300 border-2 border-black hover:bg-green-300 transition-colors duration-150 
++              [&_td]:border-2 [&_td]:border-black [&_td]:p-1.5"
++            >
++              <td key={`row-${index}`}>{index + 1}</td>
++              <td>
++                {new Date(order.createdAt).toLocaleString(undefined, {
++                  year: "numeric",
++                  month: "numeric",
++                  day: "numeric",
++                  hour: "2-digit",
++                  minute: "2-digit",
++                  // 秒不加，就不顯示
++                })}
++              </td>
++              <td>{order.state === "Unfulfilled" ? "尚未處理" : "已處理"}</td>
+               <td>
+-                <button onClick={() => search(order.UUID.toString())}>
++                <button onClick={() => search(order.UUID.toString(), order)}>
+                   查找
+                 </button>
+               </td>
+diff --git a/src/components/app/quote/QuoteTable/QuoteTableServices.ts b/src/components/app/quote/QuoteTable/QuoteTableServices.ts
+index fadb276..03eb985 100644
+--- a/src/components/app/quote/QuoteTable/QuoteTableServices.ts
++++ b/src/components/app/quote/QuoteTable/QuoteTableServices.ts
+@@ -7,7 +7,7 @@ export const searchUserQuoteTable = async (page: string) => {
+   params.append("page", page);
+   try {
+     const result = await fetch(
+-      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuoteTable?${params.toString()}`,
++      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuoteTable?${params.toString()}`,
+       {
+         method: "GET",
+         credentials: "include",
+@@ -29,13 +29,14 @@ export const searchUserQuoteTable = async (page: string) => {
+ //* 直接驗證使用者後拿ID
+ //* 用ID 及 傳入的文章ID 做文章搜索
+ export const searchUserQuote = async (quoteUUID: string) => {
++  if (!quoteUUID) return null;
+   const params = new URLSearchParams();
+   params.append("quoteUUID", quoteUUID);
+-
++  console.log("sdf");
+   //* 返回使用者文字報價單
+   try {
+     const result = await fetch(
+-      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteTable/searchUserQuote?${params.toString()}`,
++      `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuote?${params.toString()}`,
+       {
+         method: "GET",
+         credentials: "include",
+diff --git a/src/components/app/quote/QuoteTable/UserQuote.tsx b/src/components/app/quote/QuoteTable/UserQuote.tsx
+index c6428aa..3a1404a 100644
+--- a/src/components/app/quote/QuoteTable/UserQuote.tsx
++++ b/src/components/app/quote/QuoteTable/UserQuote.tsx
+@@ -1,15 +1,31 @@
++"use client";
+ import Image from "next/image";
+ import { lazy, useEffect, useMemo, useState } from "react";
++import URLImage from "@/components/image/URLImg";
++import ButtonModule from "@/components/button/ButtonModule";
++interface Order {
++  id: number;
++  createdAt: string;
++  state: string;
++  UUID: string;
++  conditionerSelectedOption: string[];
++  brands: string;
++  remarks: string;
++  userid: number;
++}
+ 
+ const UserQuote = ({
+   isLoading,
+   data,
+   setFunctionSwitch,
+   UUID,
++  quoteData,
+ }: {
+   isLoading: boolean;
+-  data: any;
++  data: string[] | null;
++  // data: any;
+   setFunctionSwitch: React.Dispatch<React.SetStateAction<string>>;
++  quoteData: Order | null;
+   UUID: string;
+ }) => {
+   //* 回到歷史報價單表格
+@@ -18,8 +34,27 @@ const UserQuote = ({
+   };
+ 
+   if (isLoading) return <div>資料載入中...</div>;
+-  if (!data || !data.userData || !data.images) {
+-    return <div>查無資料</div>;
++
++  console.log("quoteData:");
++  console.log(quoteData);
++  if (!quoteData)
++    return (
++      <>
++        <div className="text-red-500 text-xl">查無歷史資料</div>
++        <button onClick={backToQuoteTable}>回到報價單目錄</button>
++      </>
++    );
++
++  console.log("data:");
++  console.log(data);
++
++  if (!data) {
++    return (
++      <>
++        <button onClick={backToQuoteTable}>回到報價單目錄</button>
++        <div>查無資料</div>
++      </>
++    );
+     //! 改為錯誤頁面 確認後返回報價單
+   }
+ 
+@@ -30,7 +65,7 @@ const UserQuote = ({
+   ]);
+ 
+   const groupedImages = useMemo(() => {
+-    const images: string[] = data.images;
++    const images: string[] = data;
+     const result: (string[] | null)[][] = [[null, null]];
+ 
+     images.forEach((image) => {
+@@ -46,7 +81,7 @@ const UserQuote = ({
+     });
+ 
+     return result;
+-  }, [data.images]);
++  }, [data]);
+ 
+   useEffect(() => {
+     setImageArray(groupedImages);
+@@ -54,68 +89,131 @@ const UserQuote = ({
+   //~ 將陣列字串依照名稱套入循環陣列中
+ 
+   return (
+-    <>
+-      <button onClick={backToQuoteTable}>回到報價單目錄</button>
+-      <div>
+-        <div>
+-          <div>需要報價的品牌</div>
+-          <ul>
+-            {data.userData.conditionerSelectedOption.map((option: string) => (
+-              <li key={option}>{option}</li>
+-            ))}
++    <div className="p-4 ">
++      <ButtonModule onClick={backToQuoteTable} size="md" className="m-2">
++        <svg
++          xmlns="http://www.w3.org/2000/svg"
++          fill="none"
++          viewBox="0 0 24 24"
++          strokeWidth={1.5}
++          stroke="currentColor"
++          className="w-5 h-5 mr-2"
++        >
++          <path
++            strokeLinecap="round"
++            strokeLinejoin="round"
++            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
++          />
++        </svg>
++        回到報價單目錄
++      </ButtonModule>
++      <div className="border-2 border-gray-800 rounded-lg mt-4 bg-webGreenToBrown-400 overflow-hidden">
++        <div className="mt-1 w-full border-b-2 border-gray-800">
++          <h1 className=" border-b-2 border-gray-800">需要報價的品牌</h1>
++          <ul className="bg-white">
++            {quoteData.conditionerSelectedOption.map(
++              (option: string, index) => (
++                <li key={`conditionerSelectedOption:${index}`}>{option}</li>
++              )
++            )}
+           </ul>
+-          <div>以填寫需求的品牌</div>
+-          <div>{data.userData.bands}</div>
+-        </div>
++          {quoteData.brands == "" ? null : (
++            <>
++              <div className=" border-y-2 border-gray-800 ">額外的品牌需求</div>
++              <div className="bg-white">{quoteData.brands}</div>
++            </>
++          )}
+ 
+-        <div>
+-          <div>報價需求</div>
+-          <div>{data.userData.remarks}</div>
++          <div>
++            <div className=" border-y-2 border-gray-800 ">報價需求</div>
++            <div className="bg-white">{quoteData.remarks}</div>
++          </div>
+         </div>
+-
+-        <div>
++        <div className=" border-b-2 border-gray-800 ">提供的照片</div>
++        <div className="bg-white flex flex-col items-center justify-center overflow-hidden">
+           {/* 組別 */}
+-          {imageArray.map((firstIndex) => {
++          {imageArray.map((firstIndex, index) => {
+             if (Array.isArray(firstIndex)) {
+               {
+                 /* 內外 */
++                return (
++                  <>
++                    <div className="  px-1 mt-2 rounded-lg text-white bg-sky-500">
++                      第{index + 1}組內外機照片
++                    </div>
++                    <div className="border-b-2 border-gray-400 w-full">
++                      內機
++                    </div>
++                    {firstIndex[0] &&
++                      firstIndex[0].map((fileName) => {
++                        if (typeof fileName === "string") {
++                          const params = new URLSearchParams();
++                          params.append("userQuoteUUID", UUID);
++                          params.append("fileName", fileName);
++                          // return <div>{`${fileName}`}</div>;
++                          return (
++                            <div
++                              className={`w-[50%] flex items-center justify-center m-2`}
++                              key={`secondIndex-${fileName}`}
++                            >
++                              <URLImage
++                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
++                                loading="lazy"
++                                onError={(e) => {
++                                  console.log("URLImage error");
++                                  console.log(e);
++                                }}
++                                alt={fileName}
++                                key={fileName}
++                                fill
++                                className="overflow-hidden rounded-lg object-cover"
++                              />
++                            </div>
++                          );
++                        }
++                        return null;
++                      })}
++                    <div className="border-b-2 border-gray-400 w-full ">
++                      外機
++                    </div>
++                    {firstIndex[1] &&
++                      firstIndex[1].map((fileName) => {
++                        if (typeof fileName === "string") {
++                          const params = new URLSearchParams();
++                          params.append("userQuoteUUID", UUID);
++                          params.append("fileName", fileName);
++                          // return <div>{`${fileName}`}</div>;
++                          return (
++                            <div
++                              className={`w-[50%] flex items-center justify-center m-2`}
++                              key={`secondIndex-${fileName}`}
++                            >
++                              <URLImage
++                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
++                                loading="lazy"
++                                onError={(e) => {
++                                  console.log("URLImage error");
++                                  console.log(e);
++                                }}
++                                alt={fileName}
++                                key={fileName}
++                                fill
++                                className="overflow-hidden rounded-lg"
++                              />
++                            </div>
++                          );
++                        }
++                        return null;
++                      })}
++                  </>
++                );
+               }
+-              return firstIndex.map((secondIndex) => {
+-                if (Array.isArray(secondIndex)) {
+-                  {
+-                    /* 字串陣列展開 */
+-                  }
+-                  return secondIndex.map((fileString) => {
+-                    if (typeof fileString === "string") {
+-                      const params = new URLSearchParams();
+-                      params.append("userQuoteUUID", UUID);
+-                      params.append("fileString", fileString);
+-                      return (
+-                        <div className="key={fillString} w-[50%]">
+-                          <Image
+-                            src={`/api/quoteUpload/quoteTable?${params.toString()}`}
+-                            loading="lazy"
+-                            onError={(e) => {
+-                              e.currentTarget.src = "";
+-                              e.currentTarget.style.display = "none";
+-                            }}
+-                            alt={fileString}
+-                            fill
+-                          />
+-                        </div>
+-                      );
+-                    }
+-                    return null;
+-                  });
+-                }
+-                return null;
+-              });
+             }
+             return null;
+           })}
+         </div>
+       </div>
+-    </>
++    </div>
+   );
+ };
+ 
+diff --git a/src/components/button/ButtonExample.tsx b/src/components/button/ButtonExample.tsx
+new file mode 100644
+index 0000000..4e6d6ee
+--- /dev/null
++++ b/src/components/button/ButtonExample.tsx
+@@ -0,0 +1,65 @@
++// App.tsx
++import React, { useState } from "react";
++import Button from "./ButtonModule";
++
++const ButtonExample: React.FC = () => {
++  const [isSubmitting, setIsSubmitting] = useState(false);
++
++  const handleSubmit = () => {
++    setIsSubmitting(true);
++    // 模擬 API 呼叫
++    setTimeout(() => setIsSubmitting(false), 2000);
++  };
++
++  return (
++    <div className="p-6 max-w-md mx-auto space-y-4 font-sans">
++      <h1 className="text-2xl font-bold text-gray-800">TS + Tailwind Button</h1>
++
++      {/* 主要按鈕 */}
++      <Button variant="primary" size="md" onClick={() => alert("主要按鈕")}>
++        主要按鈕
++      </Button>
++
++      {/* 次要按鈕 */}
++      <Button variant="secondary" size="md" onClick={() => alert("次要按鈕")}>
++        次要按鈕
++      </Button>
++
++      {/* 危險按鈕 */}
++      <Button variant="danger" size="sm" onClick={() => alert("刪除")}>
++        刪除
++      </Button>
++
++      {/* 透明按鈕 */}
++      <Button variant="ghost" size="md">
++        取消
++      </Button>
++
++      {/* 全寬按鈕 */}
++      <Button variant="primary" fullWidth size="lg">
++        全寬按鈕
++      </Button>
++
++      {/* 載入狀態 */}
++      <Button variant="primary" loading={isSubmitting} onClick={handleSubmit}>
++        送出表單
++      </Button>
++
++      {/* 禁用按鈕 */}
++      <Button variant="primary" disabled>
++        已禁用
++      </Button>
++
++      {/* 自訂樣式 */}
++      <Button
++        variant="primary"
++        className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
++        onClick={() => alert("自訂按鈕")}
++      >
++        自訂綠色
++      </Button>
++    </div>
++  );
++};
++
++export default ButtonExample;
+diff --git a/src/components/button/ButtonModule.tsx b/src/components/button/ButtonModule.tsx
+new file mode 100644
+index 0000000..190d9be
+--- /dev/null
++++ b/src/components/button/ButtonModule.tsx
+@@ -0,0 +1,101 @@
++import React from "react";
++
++// 定義 variant 和 size 的合法值
++type Variant = "primary" | "secondary" | "danger" | "ghost";
++type Size = "sm" | "md" | "lg";
++
++// 定義 props 型別
++interface ButtonProps {
++  children: React.ReactNode;
++  variant?: Variant;
++  size?: Size;
++  fullWidth?: boolean;
++  disabled?: boolean;
++  loading?: boolean;
++  onClick?: () => void;
++  className?: string;
++  type?: "button" | "submit" | "reset";
++}
++
++const ButtonModule: React.FC<ButtonProps> = ({
++  children,
++  variant = "primary",
++  size = "md",
++  fullWidth = false,
++  disabled = false,
++  loading = false,
++  onClick,
++  className = "",
++  type = "button",
++}) => {
++  // 基礎樣式（通用）
++  const baseStyles = `
++    inline-flex items-center justify-center
++    font-medium rounded-lg
++    focus:outline-none focus:ring-2 focus:ring-offset-2
++    transition-colors
++    ${fullWidth ? "w-full" : ""}
++    ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
++  `;
++
++  // 不同 variant 的樣式
++  const variantStyles: Record<Variant, string> = {
++    primary: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-500 text-white",
++    secondary:
++      "bg-gray-200 hover:bg-gray-300 focus:ring-gray-500 text-gray-800",
++    danger: "bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white",
++    ghost: "bg-transparent hover:bg-gray-200 focus:ring-gray-500 text-gray-700",
++  };
++
++  // 不同 size 的樣式
++  const sizeStyles: Record<Size, string> = {
++    sm: "text-sm px-3 py-1.5 rounded-md",
++    md: "text-base px-4 py-2",
++    lg: "text-lg px-6 py-3 rounded-xl",
++  };
++
++  return (
++    <button
++      type={type}
++      className={`
++        ${baseStyles}
++        ${variantStyles[variant]}
++        ${sizeStyles[size]}
++        ${className}
++      `.trim()}
++      onClick={!disabled && !loading ? onClick : undefined}
++      disabled={disabled || loading}
++    >
++      {loading ? (
++        <>
++          <svg
++            className={`animate-spin -ml-1 mr-2 h-4 w-4 ${size === "sm" ? "h-3 w-3 mr-1" : size === "lg" ? "h-5 w-5 mr-3" : "h-4 w-4 mr-2"}`}
++            xmlns="http://www.w3.org/2000/svg"
++            fill="none"
++            viewBox="0 0 24 24"
++            aria-hidden="true"
++          >
++            <circle
++              className="opacity-25"
++              cx="12"
++              cy="12"
++              r="10"
++              stroke="currentColor"
++              strokeWidth="4"
++            ></circle>
++            <path
++              className="opacity-75"
++              fill="currentColor"
++              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
++            ></path>
++          </svg>
++          載入中...
++        </>
++      ) : (
++        children
++      )}
++    </button>
++  );
++};
++
++export default ButtonModule;
+diff --git a/src/components/image/URLImg.tsx b/src/components/image/URLImg.tsx
+new file mode 100644
+index 0000000..5ab38a9
+--- /dev/null
++++ b/src/components/image/URLImg.tsx
+@@ -0,0 +1,140 @@
++import { useState, useEffect, ImgHTMLAttributes } from "react";
++import Image, { ImageProps } from "next/image";
++
++interface ServerImageProps extends Omit<ImageProps, "onError" | "onLoad"> {
++  src: string;
++  alt: string;
++  onError?: (error: Event | string) => void;
++  onLoad?: () => void;
++  fallbackText?: string;
++  retryCount?: number;
++  retryDelay?: number;
++  className?: string;
++}
++
++const URLImage: React.FC<ServerImageProps> = ({
++  src,
++  alt,
++  onError,
++  onLoad,
++  fallbackText = "圖片載入失敗",
++  retryCount = 2,
++  retryDelay = 1000,
++  className,
++  ...props
++}) => {
++  const [imgSrc, setImgSrc] = useState<string>(src);
++  const [isLoading, setIsLoading] = useState<boolean>(true);
++  const [hasError, setHasError] = useState<boolean>(false);
++  const [retryAttempts, setRetryAttempts] = useState<number>(0);
++
++  useEffect(() => {
++    setImgSrc(src);
++    setIsLoading(true);
++    setHasError(false);
++    setRetryAttempts(0);
++  }, [src]);
++
++  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
++    console.error("Image loading error:", e);
++
++    if (retryAttempts < retryCount) {
++      // 重试机制
++      setTimeout(() => {
++        setRetryAttempts((prev) => prev + 1);
++        // 通过添加时间戳参数来避免缓存
++        setImgSrc(`${src}?retry=${Date.now()}`);
++        setIsLoading(true);
++        setHasError(false);
++      }, retryDelay);
++    } else {
++      // 所有重试尝试都失败
++      setIsLoading(false);
++      setHasError(true);
++      if (onError) onError(e.nativeEvent);
++    }
++  };
++
++  const handleLoad = () => {
++    setIsLoading(false);
++    setHasError(false);
++    if (onLoad) onLoad();
++  };
++
++  const retryLoadImage = () => {
++    setRetryAttempts(0);
++    setImgSrc(src);
++    setIsLoading(true);
++    setHasError(false);
++  };
++
++  // 如果图片加载失败，显示文字错误
++  if (hasError) {
++    return (
++      <div
++        className={`relative flex flex-col items-center justify-center bg-gray-100 text-gray-400 border border-dashed border-gray-300 rounded-lg ${className || ""}`}
++        style={{
++          width: props.width || "100%",
++          height: props.height || "100%",
++        }}
++      >
++        <svg
++          className="w-12 h-12 mb-2"
++          fill="none"
++          stroke="currentColor"
++          viewBox="0 0 24 24"
++          xmlns="http://www.w3.org/2000/svg"
++        >
++          <path
++            strokeLinecap="round"
++            strokeLinejoin="round"
++            strokeWidth={2}
++            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
++          />
++        </svg>
++        <p className="text-sm mb-2 text-center px-2">{fallbackText}</p>
++        <button
++          onClick={retryLoadImage}
++          className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors flex items-center"
++        >
++          <svg
++            className="w-4 h-4 mr-1"
++            fill="none"
++            stroke="currentColor"
++            viewBox="0 0 24 24"
++            xmlns="http://www.w3.org/2000/svg"
++          >
++            <path
++              strokeLinecap="round"
++              strokeLinejoin="round"
++              strokeWidth={2}
++              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
++            />
++          </svg>
++          重新加載
++        </button>
++      </div>
++    );
++  }
++
++  return (
++    <div className={`relative inline-block overflow-hidden ${className || ""}`}>
++      {isLoading && (
++        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
++          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
++        </div>
++      )}
++
++      <img
++        src={imgSrc}
++        alt={alt}
++        onError={handleError}
++        onLoad={handleLoad}
++        crossOrigin="use-credentials"
++        {...props}
++      />
++    </div>
++  );
++};
++
++export default URLImage;
+diff --git a/src/components/public/PaginationButton.tsx b/src/components/public/PaginationButton.tsx
+index 22b685d..5d4fb8c 100644
+--- a/src/components/public/PaginationButton.tsx
++++ b/src/components/public/PaginationButton.tsx
+@@ -38,13 +38,13 @@ export default function PaginationBtuuon({
+   }, [page, totalCount]);
+ 
+   return (
+-    <div>
++    <div className="m-2">
+       {page <= 4 ? (
+         <div>
+           {pagination.map((number) => {
+             return (
+               <button
+-                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
++                className={`${page === number ? "bg-amber-200" : "bg-slate-400"} m-2 px-2 rounded-lg min-w-7`}
+                 onClick={() => setPage(number)}
+                 key={`pagination-${number}`}
+               >
+@@ -59,7 +59,7 @@ export default function PaginationBtuuon({
+           //* 顯示範例  1﹉ 2 3 4 5﹉ 6
+           */}
+           <button
+-            className="bg-slate-400"
++            className="bg-slate-400  m-2 px-2 rounded-lg min-w-7"
+             onClick={() => setPage(1)}
+             key={`pagination-1`}
+           >
+@@ -69,7 +69,7 @@ export default function PaginationBtuuon({
+           {pagination.map((number) => {
+             return (
+               <button
+-                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
++                className={`${page === number ? "bg-amber-200" : "bg-slate-400"}  m-2 px-2 rounded-lg min-w-7`}
+                 onClick={() => setPage(number)}
+                 key={`pagination-${number}`}
+               >
+@@ -104,7 +104,7 @@ export default function PaginationBtuuon({
+               <button
+                 className={`${page === number ? "bg-amber-200" : "bg-slate-400"}`}
+                 onClick={() => setPage(number)}
+-                key={`pagination-${number}`}
++                key={`pagination-${number}  m-2 px-2 rounded-lg min-w-7`}
+               >
+                 {number}
+               </button>
+diff --git a/src/utils/appRouter/api/auth/auth-config.ts b/src/utils/appRouter/api/auth/auth-config.ts
+index 2625584..83f78fa 100644
+--- a/src/utils/appRouter/api/auth/auth-config.ts
++++ b/src/utils/appRouter/api/auth/auth-config.ts
+@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
+         },
+       },
+     }),
++
+     //內建登入 純英文 自定義登入可使用
+     CredentialsProvider({
+       id: "login",
+@@ -103,11 +104,11 @@ export const authOptions: NextAuthOptions = {
+       },
+     }),
+   ],
+-  pages: {
+-    signIn: "/signin", // 指定自定义的登录页面
+-    error: "/auth/error",
+-  },
+-  session: { strategy: "jwt" },
++  // pages: {
++  //   signIn: "/signin", // 指定自定义的登录页面
++  //   error: "/signin",
++  // },
++  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+   callbacks: {
+     async signIn({ user, account, profile }) {
+       if (account && account.provider && user && user.email && user.name) {
+@@ -121,10 +122,11 @@ export const authOptions: NextAuthOptions = {
+             const userRepository = await DataSourse.getRepository(User);
+             //查找email是否已經建立資料
+             const existingUser = await userRepository.findOne({
+-              select: ["email"],
+               where: { email: user.email },
+             });
+             //不存在就建立使用者資料
++            console.log("使用者存在?:");
++            console.dir(existingUser, { depth: null });
+             if (!existingUser) {
+               //建立事務失敗就回滾
+               const success = await DataSourse.manager.transaction(
+@@ -154,45 +156,60 @@ export const authOptions: NextAuthOptions = {
+                         ["email", "name"].includes(error.property)
+                       );
+                       if (filiterUserErrors.length > 0) {
+-                        return "/signin";
++                        console.log("filiterUserErrors?:");
++                        console.dir(filiterUserErrors, { depth: null });
++                        return false;
+                       }
+                     }
+                     const oauth2errors = await validate(useroauth);
+                     if (oauth2errors.length > 0) {
+-                      return "/signin";
++                      console.log("oauth2errors?:");
++                      console.dir(oauth2errors, { depth: null });
++                      return false;
+                     }
+                     //事務儲存
+                     await EntityManager.save(userSave);
++                    return true;
+                   }
+                 }
+               );
+               if (success) {
+                 return true;
+               } else {
+-                return "/signin";
++                return false;
+               }
+             }
++            console.log("返回true");
++            return true;
+           }
+         } catch (e) {
+-          console.error("----------");
+-          console.error("Callback Error");
+-          console.error(e);
+-          console.error("----------");
+-          return "/signin";
++          console.error("Error in signIn callback:", e);
++          return false; // 錯誤時拒絕登入
+         }
+ 
+-        return "/signin";
++        return false;
+       }
+ 
+-      return "/signin";
++      return false;
+     },
+     //設定jwt token
+     async jwt({ token, user }) {
+-      if (user) {
+-        token.id = user.id;
+-        token.name = user.name;
+-        token.email = user.email;
+-        token.expires = Date.now() + 30 * 24 * 60 * 60 * 1000;
++      // 1. 第一次登入：user 有資料，token 還沒建立
++      if (user && user.email) {
++        const dataSource = await initDataSourse();
++        const userRepository = dataSource.getRepository(User);
++
++        // 用 email 查資料庫，取得 User.id
++        const dbUser = await userRepository.findOne({
++          where: { email: user.email },
++          select: ["id", "name", "email"],
++        });
++
++        if (dbUser) {
++          token.id = dbUser.id.toString();
++          token.name = dbUser.name;
++          token.email = dbUser.email;
++        }
+       }
+       return token;
+     },
+@@ -204,12 +221,15 @@ export const authOptions: NextAuthOptions = {
+       session.user = token;
+       return session;
+     },
+-    // async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+-    //   if (url === "auth/signin") {
+-    //     return baseUrl;
+-    //   }
+-    //   return url.startsWith(baseUrl) ? url : baseUrl;
+-    // },
++    async redirect({ url, baseUrl }) {
++      // 如果是从登录页面重定向，则转到首页
++      console.log(`Redirecting from ${url} with base ${baseUrl}`);
++      if (url === `${baseUrl}/signin`) {
++        console.log(`Redirecting from ${url} with base ${baseUrl}`);
++        return `${baseUrl}/`;
++      }
++      return url;
++    },
+   },
+   secret: process.env.NEXTAUTH_SECRET,
+   logger: {
+diff --git a/src/utils/webWorker/fileUpload.ts b/src/utils/webWorker/fileUpload.ts
+index 3ecc52c..dd17b50 100644
+--- a/src/utils/webWorker/fileUpload.ts
++++ b/src/utils/webWorker/fileUpload.ts
+@@ -58,7 +58,8 @@ self.onmessage = async function (event) {
+         formdata.append("totalChunks", totalChunks.toString());
+         formdata.append("photoNumber", photoNumber.toString());
+         const response = await fetch(
+-          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/upload`,
++          `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/uploadImage`,
++
+           {
+             method: "POST",
+             credentials: "include",
+@@ -67,7 +68,11 @@ self.onmessage = async function (event) {
+         );
+ 
+         if (!response.ok) {
+-          return { success: false, SliceIndex };
++          retries--;
++          if (retries === 0) {
++            return { success: false, SliceIndex };
++          }
++          continue;
+         }
+ 
+         return { success: true, SliceIndex };
+@@ -106,15 +111,11 @@ self.onmessage = async function (event) {
+           results.push(result);
+           self.postMessage({
+             success: "uploading",
+-            progress: Math.floor(i / totalChunks) * 100,
++            progress: Math.floor((i / totalChunks) * 100),
+           });
+         })
+         .catch((error) => {
+-          self.postMessage({
+-            success: "failure",
+-            progress: "",
+-          });
+-          return console.log(error);
++          throw error;
+         })
+         .finally(() => {
+           executing.splice(executing.indexOf(taskPromise), 1);
+@@ -135,7 +136,7 @@ self.onmessage = async function (event) {
+ 
+     const result = await concurrently(input);
+     const allSuccess = result.every((result) => {
+-      result.success == true;
++      return result.success == true;
+     });
+ 
+     if (allSuccess) {
+@@ -144,9 +145,13 @@ self.onmessage = async function (event) {
+         progress: "",
+       });
+     } else {
++      const errorMessage = result.filter(
++        (success) => success.success === false
++      );
+       self.postMessage({
+         success: "failure",
+         progress: "",
++        message: errorMessage,
+       });
+     }
+   } catch (e) {
+diff --git a/tailwind.config.js b/tailwind.config.js
+index aa4ca56..fefd54f 100644
+--- a/tailwind.config.js
++++ b/tailwind.config.js
+@@ -38,9 +38,5 @@ module.exports = {
+     },
+   },
+   plugins: [],
+-  corePlugins: {
+-    preflight: true, // 确保 Preflight 是启用的
+-    transform: false,
+-    filter: false,
+-  },
++  corePlugins: { preflight: true },
+ };

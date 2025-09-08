@@ -4,7 +4,7 @@ interface initialState {
   fileTotalCount: number;
   fileUploadPercentage: number;
   numberOfCurrentFiles: number;
-  windowOpen: boolean;
+  dialogOpen: boolean;
   uploadState: "上傳中" | "上傳失敗" | "上傳完成" | "無資料";
   uploadComplete: boolean;
 }
@@ -14,7 +14,7 @@ const initialState: initialState = {
   fileTotalCount: 0,
   fileUploadPercentage: 0,
   numberOfCurrentFiles: 0,
-  windowOpen: false,
+  dialogOpen: false,
   uploadState: "無資料",
   // uploadState: "上傳完成",
   // uploadState: "上傳失敗",
@@ -34,8 +34,8 @@ const uploadSlice = createSlice({
     setNumberOfCurrentFiles: (state, action) => {
       state.numberOfCurrentFiles = action.payload;
     },
-    setWindowOpen: (state, action) => {
-      state.windowOpen = action.payload;
+    setDialogOpen: (state, action) => {
+      state.dialogOpen = action.payload;
     },
     setUploadState: (state, action) => {
       state.uploadState = action.payload;
@@ -49,7 +49,7 @@ const uploadSlice = createSlice({
 export const {
   setFileTotalCount,
   setFileUploadPercentage,
-  setWindowOpen,
+  setDialogOpen,
   setUploadState,
   setUploadComplete,
   setNumberOfCurrentFiles,
