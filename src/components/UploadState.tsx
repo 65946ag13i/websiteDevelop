@@ -24,8 +24,6 @@ const UploadState: React.FC<{}> = () => {
     numberOfCurrentFiles,
   } = useAppSelector((state) => state.uploadState);
 
-  const [checkBoxOpen, setCheckBoxOpen] = useState<Boolean>(false);
-  const [modalOpen, setModalOpen] = useState<Boolean>(false);
   const [uploadBoxOpen, setUploadBoxOpen] = useState<Boolean>(false);
   return (
     <>

@@ -104,10 +104,10 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  // pages: {
-  //   signIn: "/signin", // 指定自定义的登录页面
-  //   error: "/signin",
-  // },
+  pages: {
+    signIn: "/signin", // 指定自定义的登录页面
+    error: "/signin",
+  },
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     async signIn({ user, account, profile }) {

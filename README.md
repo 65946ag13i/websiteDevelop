@@ -1,3 +1,5 @@
+# 網頁啟動
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
@@ -16,21 +18,20 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+# 前言
 
-## Learn More
+這是我在學習完網路課程後發現內容太少，所以直接製作一個網頁，了解網站需要的各種功能
 
-To learn more about Next.js, take a look at the following resources:
+由於是第一次練習網頁，在寫完後才發現，功能上有的難以維護，時間不夠修改，所以以練習基礎功能為目標
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+在網頁配色上本來想以修改配色，順便練習字體、背景配色功能，但發現不如不配色以白底黑字更耐看
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+所以網頁上的配色一樣練習為主
 
-## Deploy on Vercel
+# 前後端功能說明
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 前端
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 後端

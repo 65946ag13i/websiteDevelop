@@ -34,7 +34,7 @@ const HomePage = () => {
             <div className="text-center p-1">傳真 04-7285891</div>
             <div className="text-center p-1">地址:彰化縣彰化市民族路87號</div>
             <a
-              className="block text-center text-blue-600 underline hover:text-blue-800 visited:text-purple-600  p-1"
+              className="block text-center text-blue-600 active:underline hover:text-blue-800 visited:text-purple-600  p-1"
               href="https://maps.app.goo.gl/gQmdXNJSXeL42pQv8"
               target="_blank"
               rel="noopener noreferrer"

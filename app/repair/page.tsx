@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-
+import LinkCards from "@/components/card/LinkCards";
 const repairPage: React.FC = () => {
   return (
     <>
@@ -20,7 +20,7 @@ const repairPage: React.FC = () => {
             <br />
             <ol className="list-decimal self-start list-inside relative left-[5px]">
               <li>我們維修處理的沒有原廠保固</li>
-              <li>有其他故障原因，原廠更好處理問題</li>
+              <li>有其他故障原因，原廠更容易問題</li>
             </ol>
             <div className="text-red-600">
               機器超過八年以上都不建議維修，容易出現修好一個壞另一個
@@ -32,11 +32,8 @@ const repairPage: React.FC = () => {
           <div className="text-xl text-center w-full border-y-2 border-black p-3 bg-[#B8E5AB] ">
             以下提供各品牌服務站及線上報修
           </div>
-          <div className=" w-full text-center [&>*:nth-child(even)]:bg-gray-200 ">
-            <div>
-              <div className="border-gray-900 border-b-2 mb-2 bg-webGreenToBrown-800">
-                國際牌
-              </div>
+          <div className="flex flex-col my-4 items-center gap-4 w-full text-center [&>*:nth-child(even)]:bg-gray-200 ">
+            <LinkCards title="國際牌">
               <div>
                 <a
                   href="https://pmst.panasonic.com.tw/FAQ/Article/1791"
@@ -57,12 +54,9 @@ const repairPage: React.FC = () => {
                   線上報修
                 </a>
               </div>
-            </div>
-            <div>
-              <div className="border-gray-900 border-y-2 mb-2 bg-webGreenToBrown-800">
-                日立
-              </div>
+            </LinkCards>
 
+            <LinkCards title="日立" subtitle="日立家電和日立冷氣是不同公司">
               <div>
                 <a
                   href="https://www.hitachiaircon.com/tw/service/maintain"
@@ -83,27 +77,32 @@ const repairPage: React.FC = () => {
                   日立家電線上報修
                 </a>
               </div>
-              <div className="text-red-600 text-xl pb-2">
-                日立家電和日立冷氣是不同公司
+            </LinkCards>
+
+            <LinkCards title="聲寶">
+              <div>
+                <a
+                  href="https://www.sampo.com.tw/service_reply.aspx?q=0"
+                  className="text-blue-500 underline  hover:text-red-400 active:text-red-500"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  聲寶線上維修
+                </a>
               </div>
-            </div>
-            <div className="border-gray-900 border-t-2">
-              <div className="border-gray-900 border-b-2 mb-2 bg-webGreenToBrown-800">
-                聲寶
+              <div>
+                <a
+                  href="https://www.sampo.com.tw/storefinder.aspx?storetype=%E6%9C%8D%E5%8B%99%E6%93%9A%E9%BB%9E"
+                  className="text-blue-500 underline  hover:text-red-400 active:text-red-500"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  服務據點
+                </a>
               </div>
-              <a
-                href="https://www.hitachiaircon.com/tw/service/maintain"
-                className="text-blue-500 underline  hover:text-red-400 active:text-red-500"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                聲寶線上維修及服務據點
-              </a>
-            </div>
-            <div className="mt-2 pb-2">
-              <div className="border-gray-900 border-y-2 mb-2 bg-webGreenToBrown-800">
-                華菱
-              </div>
+            </LinkCards>
+
+            <LinkCards title="華菱">
               <div>
                 <a
                   href="https://twhawrin.com/%e5%85%a8%e5%9c%8b%e6%9c%8d%e5%8b%99%e6%93%9a%e9%bb%9e/"
@@ -124,7 +123,7 @@ const repairPage: React.FC = () => {
                   華菱線上報修
                 </a>
               </div>
-            </div>
+            </LinkCards>
           </div>
         </div>
       </div>

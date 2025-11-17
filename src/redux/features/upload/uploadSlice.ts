@@ -18,6 +18,7 @@ const initialState: initialState = {
   uploadState: "無資料",
   // uploadState: "上傳完成",
   // uploadState: "上傳失敗",
+  // uploadState: "上傳中",
   uploadComplete: false,
 };
 

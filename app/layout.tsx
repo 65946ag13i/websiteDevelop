@@ -4,6 +4,7 @@ import React from "react";
 import WebsideHeader from "@/components/WebsideHeader";
 import NavigationBar from "@/components/NavigationBar";
 import UploadState from "@/components/UploadState";
+import UploadState2 from "@/components/UploadState2";
 import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/appRouter/api/auth/auth-config";
@@ -78,7 +79,7 @@ const RootLayout = async ({ children }: ReduxProviderProps) => {
               </p>
             </footer>
 
-            <UploadState />
+            <UploadState2 />
           </SessionProvider>
         </AllProviders>
       </body>

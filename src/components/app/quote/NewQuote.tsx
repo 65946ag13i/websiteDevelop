@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
+import { useAppDispatch } from "@/redux/hook/reduxHook";
 import React, { useEffect, useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
 import {
@@ -61,9 +61,8 @@ function uploadFileWithWorker(
   });
 }
 
+//~ 組件起點
 const NewQuote: React.FC = () => {
-  // const session = useSession();
-
   //* 子組件上移
   const [photoURL, setPhotoURL] = useState<(string[] | null)[][]>([
     [null, null],
@@ -82,7 +81,7 @@ const NewQuote: React.FC = () => {
   ): Promise<{ uploadQueue: Array<() => Promise<{ success: boolean }>> }> {
     const UUID = fileUUID;
     const uploadQueue: (() => Promise<{ success: boolean }>)[] = [];
-    console.dir(photoFile, { depth: null });
+    // console.dir(photoFile, { depth: null });
     //* 第一層 選組別
     for (const [index, firstNested] of photoFile.entries()) {
       if (index < 4) {
@@ -118,10 +117,13 @@ const NewQuote: React.FC = () => {
         }
       }
     }
-    console.log("送出數組結果");
+    // console.log("送出數組結果");
     return { uploadQueue };
   }
   //* 簡易認證文字表單
+  const [remarks, setRemarks] = useState("");
+  const [brands, setBrands] = useState("");
+
   async function easyFormWordCheck(): Promise<boolean> {
     if (
       conditionerSelectedOption.length !== 0 &&
@@ -129,16 +131,13 @@ const NewQuote: React.FC = () => {
       remarks.length <= 300 &&
       remarks.length >= 10
     ) {
-      console.log("easyFormWordCheck 驗證成功");
+      // console.log("easyFormWordCheck 驗證成功");
       return true;
     }
-    console.log("easyFormWordCheck 驗證失敗");
+    // console.log("easyFormWordCheck 驗證失敗");
     return false;
   }
-  //子組件上移
 
-  const [remarks, setRemarks] = useState("");
-  const [brands, setBrands] = useState("");
   //----日曬checkbox-----
   // const [selectedOption, setSelectedOption] = useState<string>("no");
   // const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,8 +250,8 @@ const NewQuote: React.FC = () => {
   //併發上傳所有分片到後端資料夾  依照區別儲存 UUID 內外機(01) 相片編號 總分片數 第幾個分片
   //回復完成結果
 
-  // const { data: session, status } = useSession();
   const dispatch = useAppDispatch();
+
   const dataUpload = async () => {
     let worker: Worker | null = null;
 
@@ -332,13 +331,6 @@ const NewQuote: React.FC = () => {
         worker.terminate();
       }
     }
-
-    //如果文字表單上傳成功 圖片上傳 啟動分片
-    // if (true) {
-    //   const worker = new Worker(
-    //     new URL("../../utils/webWorker/fileUpload.ts", import.meta.url)
-    //   );
-    // }
   };
 
   // console.log("顯示登入資訊:");

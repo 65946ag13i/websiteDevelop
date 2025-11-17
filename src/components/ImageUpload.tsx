@@ -158,16 +158,16 @@ const ImageUpload: React.FC<ChildProps> = ({
     index: number,
     option: number
   ) => {
-    console.log("1");
+    // console.log("1");
     if (!e || !e.target || !e.target.files) return;
-    console.log("2");
+    // console.log("2");
     //URLCreate
     const photoUrlAndFile = await AddPhoto(e.target.files);
     const photoUrl: string[] = photoUrlAndFile.map((data) => data.url);
     const photoFile: File[] = photoUrlAndFile.map((data) => data.file);
-    console.log("3");
+    // console.log("3");
     if (photoUrl.length === 0 || photoFile.length === 0) return;
-    console.log("4");
+    // console.log("4");
     setphotoFile((prev) => {
       const newURL = deepCloneArray(prev);
       if (Array.isArray(newURL[index][option])) {
