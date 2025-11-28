@@ -2,7 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
-
+import { useCooldownCallback } from "@/utils/useHook/useDebounceCallback";
 //
 
 const ChangePassword: React.FC = () => {
@@ -142,13 +142,15 @@ const ChangePassword: React.FC = () => {
     }
   };
 
+  const sendFrom = useCooldownCallback(submitTheForm, 1000);
+
   const [passwordCheck, setPasswordCheck] = useState<Boolean>(false);
 
   return (
     <div className="mt-2">
       {severMessage ? severMessage : null}
       <form
-        onSubmit={submitTheForm}
+        onSubmit={sendFrom}
         className="grid grid-cols-[auto,1fr] grid-rows-7"
       >
         <label

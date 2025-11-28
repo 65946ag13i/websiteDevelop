@@ -1,6 +1,7 @@
 import { useAppDispatch } from "@/redux/hook/reduxHook";
 import React, { useEffect, useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
+import { useCooldownCallback } from "@/utils/useHook/useDebounceCallback";
 import {
   setFileTotalCount,
   setFileUploadPercentage,
@@ -257,6 +258,11 @@ const NewQuote: React.FC = () => {
 
     try {
       console.log("開始上傳");
+      //+ 開啟上傳視窗
+      dispatch(setDialogOpen(true));
+
+      //+ 循環上傳相片異步陣列
+      dispatch(setUploadState("上傳中"));
       const UUID = crypto.randomUUID();
       const upload = { UUID, conditionerSelectedOption, brands, remarks };
       worker = new Worker(
@@ -266,7 +272,8 @@ const NewQuote: React.FC = () => {
       const imageCheck = await fileSequentially(UUID, worker, dispatch);
       console.dir(imageCheck, { depth: null });
       if (imageCheck.uploadQueue.length == 0) {
-        console.log("mageCheck.uploadQueue 長度為空");
+        console.log("imageCheck.uploadQueue 長度為空");
+        dispatch(setUploadState("上傳失敗"));
         return;
       }
       const imageArray = imageCheck.uploadQueue;
@@ -325,6 +332,7 @@ const NewQuote: React.FC = () => {
       }
     } catch (error) {
       console.error("上傳錯誤:", error);
+      dispatch(setUploadState("上傳失敗"));
       return;
     } finally {
       if (worker) {
@@ -332,7 +340,7 @@ const NewQuote: React.FC = () => {
       }
     }
   };
-
+  const fromSend = useCooldownCallback(dataUpload, 1000);
   // console.log("顯示登入資訊:");
   // console.dir(session, { depth: null });
   return (
@@ -552,7 +560,7 @@ const NewQuote: React.FC = () => {
 
         <button
           className="px-1 mb-2 border-2 border-gray-900 rounded-lg shadow"
-          onClick={dataUpload}
+          onClick={fromSend}
         >
           表單送出
         </button>
