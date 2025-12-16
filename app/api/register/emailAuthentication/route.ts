@@ -42,7 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (errors.length > 0) {
         return NextResponse.json(
           { message: "驗證信寄出失敗" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       await codeRepository.save(newVerificationCode);

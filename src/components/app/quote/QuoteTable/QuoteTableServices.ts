@@ -4,13 +4,13 @@
 
 export const searchUserQuoteTable = async (page: string) => {
   const params = new URLSearchParams();
-  params.append("page", page);
+  params.append('page', page);
   try {
     const result = await fetch(
       `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuoteTable?${params.toString()}`,
       {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       }
     );
     if (result.ok) {
@@ -19,7 +19,7 @@ export const searchUserQuoteTable = async (page: string) => {
     }
     return null;
   } catch (e) {
-    console.error("searchUserQuoteTable API network error:", e);
+    console.error('searchUserQuoteTable API network error:', e);
     return null;
   }
 };
@@ -31,15 +31,15 @@ export const searchUserQuoteTable = async (page: string) => {
 export const searchUserQuote = async (quoteUUID: string) => {
   if (!quoteUUID) return null;
   const params = new URLSearchParams();
-  params.append("quoteUUID", quoteUUID);
-  console.log("sdf");
+  params.append('quoteUUID', quoteUUID);
+
   //* 返回使用者文字報價單
   try {
     const result = await fetch(
       `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserQuote?${params.toString()}`,
       {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       }
     );
 
@@ -47,11 +47,11 @@ export const searchUserQuote = async (quoteUUID: string) => {
       const data = await result.json();
       return data;
     }
-    console.error("searchUserQuote API server error");
+    console.error('searchUserQuote API server error');
     //* 返回使用者報價單內的圖片地址
     return null;
   } catch (e) {
-    console.error("searchUserQuote API network error:", e);
+    console.error('searchUserQuote API network error:', e);
     return null;
   }
 };

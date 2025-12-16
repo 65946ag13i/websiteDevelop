@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       console.log("Log failed login attempts");
       return NextResponse.json(
         { message: "User ID not found in session" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     if (!page || isNaN(Number(page))) {
       return NextResponse.json(
         { message: "Invalid page number" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       console.log("no data found in the database");
       return NextResponse.json(
         { message: "No quotes found for this user/找不到使用者資料" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     console.log("-----------");
@@ -63,13 +63,13 @@ export async function GET(request: NextRequest) {
     console.log("-----------");
     return NextResponse.json(
       { data: result, totalCount: count },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error in GET request:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

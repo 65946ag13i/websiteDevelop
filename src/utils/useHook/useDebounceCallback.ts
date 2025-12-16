@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useRef } from "react";
-
+import { useCallback, useEffect, useRef } from 'react';
+// eslint-disable-next-line no-unused-vars
 interface debounceReturn<T extends (...args: any[]) => void> {
+  // eslint-disable-next-line no-unused-vars
   (...args: Parameters<T>): void;
   cancel: () => void;
 }
-
+// eslint-disable-next-line no-unused-vars
 export function useDebounceCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): debounceReturn<T> {
+  void arguments;
   const callbackRef = useRef(callback);
   const setTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   callbackRef.current = callback;
@@ -18,9 +20,10 @@ export function useDebounceCallback<T extends (...args: any[]) => any>(
       setTimeoutRef.current = null;
     }
   }, []);
-
+  // eslint-disable-next-line no-unused-vars
   const debounce = useCallback(
     (...args: Parameters<T>) => {
+      void args;
       if (setTimeoutRef.current) {
         clearTimeout(setTimeoutRef.current);
       }
@@ -39,7 +42,7 @@ export function useDebounceCallback<T extends (...args: any[]) => any>(
   (debounce as debounceReturn<T>).cancel = cancel;
   return debounce as debounceReturn<T>;
 }
-
+// eslint-disable-next-line no-unused-vars
 export function useCooldownCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number
@@ -61,7 +64,9 @@ export function useCooldownCallback<T extends (...args: any[]) => any>(
   }, [cancel]);
 
   const debounce = useCallback(
+    // eslint-disable-next-line no-unused-vars
     (...args: Parameters<T>) => {
+      void args;
       if (isCoolingRef.current) return;
       isCoolingRef.current = true;
       callbackRef.current(...args);

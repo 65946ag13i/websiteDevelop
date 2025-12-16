@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface initialState {
+interface InitialState {
   fileTotalCount: number;
   fileUploadPercentage: number;
   numberOfCurrentFiles: number;
@@ -10,7 +10,7 @@ interface initialState {
 }
 
 //上傳視窗開始 上傳狀態 上傳總數 上傳進度
-const initialState: initialState = {
+const initialState: InitialState = {
   fileTotalCount: 0,
   fileUploadPercentage: 0,
   numberOfCurrentFiles: 0,

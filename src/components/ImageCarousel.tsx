@@ -26,7 +26,7 @@ const ImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
         setphotoIndex(1);
       }, 300);
     }
-  }, [photoIndex]);
+  }, [photoIndex, images.length]);
 
   return (
     <div className=" mx-auto w-[70%]  min-h-screen bg-white  ">

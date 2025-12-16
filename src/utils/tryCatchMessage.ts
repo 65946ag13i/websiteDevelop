@@ -1,6 +1,6 @@
 export default async function tryCatchMessage<T>(
   callback: () => T | Promise<T>,
-  currenTask: string
+  currenTask: string,
 ): Promise<T | undefined> {
   try {
     const result = await callback();

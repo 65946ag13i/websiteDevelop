@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json(
         { message: "帳號未驗證/Unauthrized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const userID = session?.user.id;
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       console.log("使用者ID驗證失敗");
       return NextResponse.json(
         { message: "User ID not found in session" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       console.dir(errors, { depth: null });
       return NextResponse.json(
         { message: "Form data validation failed。" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(
         { message: "Failed to save data" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       "Data",
       "User",
       userID,
-      formdata.UUID
+      formdata.UUID,
     );
 
     //*查找及建立使用者資料夾
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         await fs.mkdir(dirPath, { recursive: true }).catch((err) => {
           console.error(`建立目錄失敗：${err}`);
-          throw err;
+          throw error;
         });
         console.log(`資料夾不存在，已建立：${dirPath}`);
       }

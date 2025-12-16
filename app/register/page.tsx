@@ -1,25 +1,25 @@
-"use client";
-import { signOut } from "next-auth/react";
-import React, { useState, useEffect } from "react";
-import CooldownButton from "@/components/button/CooldownButton";
-const register: React.FC = () => {
+'use client';
+import { signOut } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import CooldownButton from '@/components/button/CooldownButton';
+const Register = () => {
   //*輸入窗
-  const [email, setEmail] = useState("");
-  const [password, setpassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [verification, setVerification] = useState("");
-  const [name, setname] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setpassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [verification, setVerification] = useState('');
+  const [name, setname] = useState('');
 
   //*信箱密碼錯誤檢測
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] =
     useState<boolean>(false);
 
   //*彈窗
   //* true 綠色,false 紅色
   const [showToastColor, setshowToastColor] = useState(false);
-  const [verificationMessage, setverificationMessage] = useState("");
+  const [verificationMessage, setverificationMessage] = useState('');
   const [showToast, setshowToast] = useState(false);
   //改善SSR渲染問題
   const [isClient, setIsClient] = useState(false);
@@ -39,29 +39,29 @@ const register: React.FC = () => {
   //*emaill 驗證
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      let emailError = "";
+      let emailError = '';
       function checkError(errorMessage: string, message: string): string {
         return errorMessage ? errorMessage : message;
       }
-      const emailLength = email.split("@")[0];
+      const emailLength = email.split('@')[0];
       if (emailLength.length > 64 || emailLength.length < 3) {
-        emailError = checkError(emailError, "email長度應該 3 到 64 字元之間");
+        emailError = checkError(emailError, 'email長度應該 3 到 64 字元之間');
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        emailError = checkError(emailError, "email格式錯誤");
+        emailError = checkError(emailError, 'email格式錯誤');
       }
 
       const illegalCharRegex = /[^a-zA-Z0-9@._-]/;
       if (illegalCharRegex.test(email)) {
-        emailError = checkError(emailError, "Email 包含非法字元");
+        emailError = checkError(emailError, 'Email 包含非法字元');
       }
-      if (email == "") {
-        setEmailError("");
+      if (email == '') {
+        setEmailError('');
       } else if (emailError) {
         setEmailError(emailError);
       } else {
-        setEmailError("");
+        setEmailError('');
       }
     }, 500);
     return () => clearTimeout(timeoutId);
@@ -70,7 +70,7 @@ const register: React.FC = () => {
   //*password 驗證
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      let passwordError = "";
+      let passwordError = '';
 
       function checkError(errorMessage: string, message: string): string {
         return errorMessage ? errorMessage : message;
@@ -79,36 +79,36 @@ const register: React.FC = () => {
       if (password.length > 30 || password.length < 3) {
         passwordError = checkError(
           passwordError,
-          "密碼長度應該 8 到 30 字元之間"
+          '密碼長度應該 8 到 30 字元之間'
         );
       }
       const containLetter = /^(?=.*[a-zA-Z]).*$/;
       if (!containLetter.test(password)) {
         console.log(password);
-        passwordError = checkError(passwordError, "應該包含一個大寫或小寫!");
+        passwordError = checkError(passwordError, '應該包含一個大寫或小寫!');
       }
 
       const passwordNumber = /^(?=.*\d).*$/;
       if (!passwordNumber.test(password)) {
-        passwordError = checkError(passwordError, "應該包含一個數字");
+        passwordError = checkError(passwordError, '應該包含一個數字');
       }
 
       const illegalCharRegex = /[^ -~]/;
       if (illegalCharRegex.test(password)) {
-        passwordError = checkError(passwordError, "密碼包含非法字符");
+        passwordError = checkError(passwordError, '密碼包含非法字符');
       }
 
       const dangerousCharsRegex = /[<>&'"]/;
       if (dangerousCharsRegex.test(password)) {
-        passwordError = checkError(passwordError, "密碼包含不允許的字符");
+        passwordError = checkError(passwordError, '密碼包含不允許的字符');
       }
 
-      if (password == "") {
-        setPasswordError("");
+      if (password == '') {
+        setPasswordError('');
       } else if (passwordError) {
         setPasswordError(passwordError);
       } else {
-        setPasswordError("");
+        setPasswordError('');
       }
     }, 500);
     return () => clearTimeout(timeoutId);
@@ -141,19 +141,19 @@ const register: React.FC = () => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register/emailAuthentication`,
       {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
         body: email,
       }
     );
 
     if (response.ok) {
       setshowToastColor(true);
-      setverificationMessage("驗證信已寄出");
+      setverificationMessage('驗證信已寄出');
       setshowToast(true);
     } else {
       setshowToastColor(false);
-      setverificationMessage("驗證信寄出失敗");
+      setverificationMessage('驗證信寄出失敗');
       setshowToast(true);
     }
   };
@@ -195,24 +195,24 @@ const register: React.FC = () => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/register`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(result),
           }
         );
         if (response.ok) {
-          signOut({ callbackUrl: "/signin" });
+          signOut({ callbackUrl: '/signin' });
         } else {
           const serverResponse = await response.json();
           console.error(serverResponse.message);
           setshowToastColor(false);
-          setverificationMessage("伺服器錯誤，請重新送出");
+          setverificationMessage('伺服器錯誤，請重新送出');
           setshowToast(true);
         }
       } catch (error) {
-        console.error("register page error on registerOnload function:", error);
+        console.error('register page error on registerOnload function:', error);
         setshowToastColor(false);
-        setverificationMessage("伺服器錯誤，請重新送出");
+        setverificationMessage('伺服器錯誤，請重新送出');
         setshowToast(true);
       }
     } else {
@@ -270,14 +270,14 @@ const register: React.FC = () => {
       {
         <div
           className={` 
-            ${showToastColor ? "bg-green-400" : "bg-red-500"}
+            ${showToastColor ? 'bg-green-400' : 'bg-red-500'}
          
            transition-all duration-500 ease-in-out 
            transform origin-top
             rounded-lg px-2
             shadow
             overflow-hidden border-black border-2
-            ${showToast ? " scale-100 visible" : " scale-0 invisible"}
+            ${showToast ? ' scale-100 visible' : ' scale-0 invisible'}
           `}
         >
           {verificationMessage}
@@ -288,7 +288,7 @@ const register: React.FC = () => {
           <form onSubmit={registerOnload} className="flex flex-col">
             <label
               htmlFor="email-input"
-              className={`flex m-1  pl-2 bg-white rounded-lg overflow-hidden  border-2 border-black shadow ${emailAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+              className={`flex m-1  pl-2 bg-white rounded-lg overflow-hidden  border-2 border-black shadow ${emailAnimation ? ' border-red-600 border-2 animate-shake' : ''}`}
               onAnimationEnd={() => setemailAnimation(false)}
             >
               信箱:
@@ -310,7 +310,7 @@ const register: React.FC = () => {
             )}
             <label
               htmlFor="password-input"
-              className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${passwordAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+              className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${passwordAnimation ? ' border-red-600 border-2 animate-shake' : ''}`}
               onAnimationEnd={() => setpasswordAnimation(false)}
             >
               密碼:
@@ -332,7 +332,7 @@ const register: React.FC = () => {
 
             <label
               htmlFor="password-input"
-              className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${confirmPasswordAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+              className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${confirmPasswordAnimation ? ' border-red-600 border-2 animate-shake' : ''}`}
               onAnimationEnd={() => setConfirmPasswordAnimation(false)}
             >
               密碼確認:
@@ -353,7 +353,7 @@ const register: React.FC = () => {
             <div>
               <label
                 htmlFor="name-input"
-                className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${nameAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+                className={`flex m-1 pl-2 rounded-lg overflow-hidden bg-white border-2 border-black ${nameAnimation ? ' border-red-600 border-2 animate-shake' : ''}`}
                 onAnimationEnd={() => setnameAnimation(false)}
               >
                 姓名:
@@ -370,7 +370,7 @@ const register: React.FC = () => {
               </label>
             </div>
             <div
-              className={`m-1 bg-white rounded-lg border-solid overflow-hidden flex flex-col border-2 border-black md:flex-row shadow ${codeAnimation ? " border-red-600 border-2 animate-shake" : ""}`}
+              className={`m-1 bg-white rounded-lg border-solid overflow-hidden flex flex-col border-2 border-black md:flex-row shadow ${codeAnimation ? ' border-red-600 border-2 animate-shake' : ''}`}
               onAnimationEnd={() => setcodeAnimation(false)}
             >
               <label htmlFor="verification" className="flex pl-2">
@@ -393,7 +393,7 @@ const register: React.FC = () => {
                 onResend={emailAuthentication}
                 normalLabel="取得信箱驗證碼"
                 className="px-2 bg-green-400"
-                controlDisabled={[buttonDisabled, "信箱驗證失敗"]}
+                controlDisabled={[buttonDisabled, '信箱驗證失敗']}
               />
             </div>
 
@@ -411,4 +411,4 @@ const register: React.FC = () => {
   );
 };
 
-export default register;
+export default Register;

@@ -1,19 +1,21 @@
 interface emailTemplate {
   subject: string;
+  // eslint-disable-next-line no-unused-vars
   text: (code: string) => string;
+  // eslint-disable-next-line no-unused-vars
   html: (code: string) => string;
 }
 
-interface emailTemplates {
+interface EmailTemplates {
   [language: string]: {
     [purpose: string]: emailTemplate;
   };
 }
 
-export const emailTemplates: emailTemplates = {
+export const emailTemplates: EmailTemplates = {
   TW: {
     verification: {
-      subject: "請驗證您的信箱",
+      subject: '請驗證您的信箱',
       text: (code: string) =>
         `您的驗證碼為：${code}\n如果您沒有請求此驗證，請忽略此郵件。`,
       html: (code: string) => `

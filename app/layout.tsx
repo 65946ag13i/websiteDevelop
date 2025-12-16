@@ -1,17 +1,20 @@
 import "./globals.css";
 import React from "react";
-// import Head from "next/head";
 import WebsideHeader from "@/components/WebsideHeader";
 import NavigationBar from "@/components/NavigationBar";
-import UploadState from "@/components/UploadState";
 import UploadState2 from "@/components/UploadState2";
 import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/appRouter/api/auth/auth-config";
-
 import { SessionProvider } from "@/components/SessionProvider/SessionProvider";
-
 import { AllProviders } from "@/components/AllProvider/AllProviders";
+import { Noto_Sans_TC } from "next/font/google";
+
+const notoSansTC = Noto_Sans_TC({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
 
 export const metadata = {
   title: "建豐電器有限公司",
@@ -51,19 +54,8 @@ const RootLayout = async ({ children }: ReduxProviderProps) => {
         <meta name="keywords" content="冷氣維修,家庭電器經銷商,冷氣清洗" />
         <title>建豐電器有限公司</title>
       </Head> */}
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap"
-        />
-      </head>
-      <body>
+
+      <body className={notoSansTC.className}>
         <AllProviders>
           <SessionProvider session={session}>
             <nav>

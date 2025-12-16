@@ -1,7 +1,7 @@
 "use client";
 import QuoteTable from "@/components/app/quote/QuoteTable/QuoteTable";
 import UserQuote from "@/components/app/quote/QuoteTable/UserQuote";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchUserQuote } from "./QuoteTableServices";
 interface Order {
@@ -14,7 +14,7 @@ interface Order {
   remarks: string;
   userid: number;
 }
-const QuoteFunctionSwitch: React.FC = () => {
+const QuoteFunctionSwitch = () => {
   const [functionSwitch, setFunctionSwitch] = useState("QuoteTable");
   const [userUUID, setUserUUID] = useState("");
   // const [shouldFetch, setShouldFetch] = useState(false);

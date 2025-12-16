@@ -1,15 +1,15 @@
-import { useAppDispatch } from "@/redux/hook/reduxHook";
-import React, { useEffect, useState } from "react";
-import ImageUpload from "@/components/ImageUpload";
-import { useCooldownCallback } from "@/utils/useHook/useDebounceCallback";
+import { useAppDispatch } from '@/redux/hook/reduxHook';
+import React, { useEffect, useState } from 'react';
+import ImageUpload from '@/components/ImageUpload';
+import { useCooldownCallback } from '@/utils/useHook/useDebounceCallback';
 import {
   setFileTotalCount,
   setFileUploadPercentage,
   setDialogOpen,
   setUploadState,
   setNumberOfCurrentFiles,
-} from "@/redux/features/upload/uploadSlice";
-interface uploadFileWithWorker {
+} from '@/redux/features/upload/uploadSlice';
+interface UploadFileWithWorker {
   pictureName: string;
   file: File;
   fileUUID: string;
@@ -17,7 +17,7 @@ interface uploadFileWithWorker {
 }
 //* 上傳分片到webWorker
 function uploadFileWithWorker(
-  uploadFileWithWorker: uploadFileWithWorker,
+  uploadFileWithWorker: UploadFileWithWorker,
   worker: Worker,
   dispatch: ReturnType<typeof useAppDispatch>
 ): Promise<{ success: boolean }> {
@@ -27,36 +27,36 @@ function uploadFileWithWorker(
     worker.onmessage = (event) => {
       const { success, progress, message } = event.data;
       switch (success) {
-        case "uploading":
+        case 'uploading':
           //設定進度
-          console.log("進度上傳");
+          console.log('進度上傳');
           console.log(progress);
           dispatch(setFileUploadPercentage(progress));
           break;
-        case "failure":
+        case 'failure':
           //進度取消
-          console.log("進度取消");
+          console.log('進度取消');
           if (message) {
             console.dir(message, { depth: null });
           }
-          dispatch(setUploadState("上傳失敗"));
+          dispatch(setUploadState('上傳失敗'));
           reject({ success: false });
           break;
-        case "success":
+        case 'success':
           //總進度完成+1
-          console.log("進度完成");
+          console.log('進度完成');
           resolve({ success: true });
           break;
         default:
-          console.log("進度穿透");
+          console.log('進度穿透');
           reject({ success: false });
           break;
       }
     };
     worker.onerror = (e) => {
-      console.error("Worker error");
+      console.error('Worker error');
       console.dir(e, { depth: null });
-      dispatch(setUploadState("上傳失敗"));
+      dispatch(setUploadState('上傳失敗'));
       reject({ success: false });
     };
   });
@@ -75,6 +75,7 @@ const NewQuote: React.FC = () => {
   //* 檢查錯誤後函式推入列隊
   //* 創建UUID,worker
   //* 導出總照片數量、上傳陣列
+
   async function fileSequentially(
     fileUUID: string,
     worker: Worker,
@@ -91,7 +92,7 @@ const NewQuote: React.FC = () => {
         for (const [secondIndex, secondNested] of firstNested.entries()) {
           if (!secondNested || secondNested.length == 0) {
             //+ 如果內外機沒有輸入或為空,返回空數組
-            console.log("如果內外機沒有輸入或為空,返回空數組");
+            console.log('如果內外機沒有輸入或為空,返回空數組');
             return { uploadQueue: [] };
           }
 
@@ -101,7 +102,7 @@ const NewQuote: React.FC = () => {
             for (const [fileindex, file] of secondNested.entries()) {
               if (fileindex < 2) {
                 //+ 照片最大2張
-                const props: uploadFileWithWorker = {
+                const props: UploadFileWithWorker = {
                   pictureName: file.name,
                   file,
                   fileUUID: UUID,
@@ -109,7 +110,7 @@ const NewQuote: React.FC = () => {
                 };
                 //+ 推入上傳列隊 準備上傳
                 uploadQueue.push(() => {
-                  console.log("推入上傳列隊 準備上傳");
+                  console.log('推入上傳列隊 準備上傳');
                   return uploadFileWithWorker(props, worker, dispatch);
                 });
               }
@@ -122,8 +123,8 @@ const NewQuote: React.FC = () => {
     return { uploadQueue };
   }
   //* 簡易認證文字表單
-  const [remarks, setRemarks] = useState("");
-  const [brands, setBrands] = useState("");
+  const [remarks, setRemarks] = useState('');
+  const [brands, setBrands] = useState('');
 
   async function easyFormWordCheck(): Promise<boolean> {
     if (
@@ -178,8 +179,8 @@ const NewQuote: React.FC = () => {
   //-----坪數大小設置-----
 
   //每填一個數值直接重設每個格子比較快，寫太複雜
-  const [squareMeter, setsquareMeter] = useState<string | number>("");
-  const [ping, setping] = useState<string | number>("");
+  const [squareMeter, setsquareMeter] = useState<string | number>('');
+  const [ping, setping] = useState<string | number>('');
 
   const handleSquareMeterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -187,15 +188,15 @@ const NewQuote: React.FC = () => {
     if (!isNaN(value)) {
       setsquareMeter(value);
     } else {
-      setsquareMeter("");
+      setsquareMeter('');
     }
 
     if (!isNaN(value)) {
       setping((value / 3.305785).toFixed(2));
-      setlength("");
-      setwidth("");
+      setlength('');
+      setwidth('');
     } else {
-      setping("");
+      setping('');
     }
   };
 
@@ -204,20 +205,20 @@ const NewQuote: React.FC = () => {
     if (!isNaN(value)) {
       setping(value);
     } else {
-      setping("");
+      setping('');
     }
 
     if (!isNaN(value)) {
       setsquareMeter((value * 3.305785).toFixed(2));
-      setlength("");
-      setwidth("");
+      setlength('');
+      setwidth('');
     } else {
-      setsquareMeter("");
+      setsquareMeter('');
     }
   };
 
-  const [length, setlength] = useState<string | number>("");
-  const [width, setwidth] = useState<string | number>("");
+  const [length, setlength] = useState<string | number>('');
+  const [width, setwidth] = useState<string | number>('');
 
   const saveLength = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -229,18 +230,17 @@ const NewQuote: React.FC = () => {
     setwidth(value);
   };
 
-  const squareCalculation = () => {
-    const result = Number(length) * Number(width);
-    return result;
-  };
-
   useEffect(() => {
+    const squareCalculation = () => {
+      const result = Number(length) * Number(width);
+      return result;
+    };
     const result = squareCalculation();
     if (!isNaN(result)) {
       setsquareMeter(result);
       setping((result / 3.305785).toFixed(2));
     } else {
-      setping("");
+      setping('');
     }
   }, [length, width]);
 
@@ -257,23 +257,23 @@ const NewQuote: React.FC = () => {
     let worker: Worker | null = null;
 
     try {
-      console.log("開始上傳");
+      console.log('開始上傳');
       //+ 開啟上傳視窗
       dispatch(setDialogOpen(true));
 
       //+ 循環上傳相片異步陣列
-      dispatch(setUploadState("上傳中"));
+      dispatch(setUploadState('上傳中'));
       const UUID = crypto.randomUUID();
       const upload = { UUID, conditionerSelectedOption, brands, remarks };
       worker = new Worker(
-        new URL("@/utils/webWorker/fileUpload.ts", import.meta.url)
+        new URL('@/utils/webWorker/fileUpload.ts', import.meta.url)
       );
       //* 驗證圖片數量，返回圖片總量、待上傳異步陣列，傳入UUID
       const imageCheck = await fileSequentially(UUID, worker, dispatch);
       console.dir(imageCheck, { depth: null });
       if (imageCheck.uploadQueue.length == 0) {
-        console.log("imageCheck.uploadQueue 長度為空");
-        dispatch(setUploadState("上傳失敗"));
+        console.log('imageCheck.uploadQueue 長度為空');
+        dispatch(setUploadState('上傳失敗'));
         return;
       }
       const imageArray = imageCheck.uploadQueue;
@@ -287,9 +287,9 @@ const NewQuote: React.FC = () => {
           `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/uploadFrom`,
 
           {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            credentials: "include",
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(upload),
           }
         );
@@ -300,7 +300,7 @@ const NewQuote: React.FC = () => {
           dispatch(setDialogOpen(true));
 
           //+ 循環上傳相片異步陣列
-          dispatch(setUploadState("上傳中"));
+          dispatch(setUploadState('上傳中'));
           for (let index = 0; index < imageArray.length; index++) {
             //+ 相片加一
             dispatch(setNumberOfCurrentFiles(index + 1));
@@ -308,31 +308,32 @@ const NewQuote: React.FC = () => {
             try {
               const element: { success: boolean } = await imageArray[index]();
               if (element.success == false) {
-                dispatch(setUploadState("上傳失敗"));
+                dispatch(setUploadState('上傳失敗'));
                 break;
               }
             } catch (error) {
-              dispatch(setUploadState("上傳失敗"));
+              console.error('上傳失敗:', error);
+              dispatch(setUploadState('上傳失敗'));
               break;
             } finally {
               dispatch(setFileUploadPercentage(0));
             }
           }
-          dispatch(setUploadState("上傳完成"));
+          dispatch(setUploadState('上傳完成'));
         } else {
-          console.error("表單上傳失敗,form upload failed");
+          console.error('表單上傳失敗,form upload failed');
 
-          dispatch(setUploadState("上傳失敗"));
+          dispatch(setUploadState('上傳失敗'));
         }
 
         //關閉worker
       } else {
-        console.log("easyFormWordCheck faild");
-        dispatch(setUploadState("上傳失敗"));
+        console.log('easyFormWordCheck faild');
+        dispatch(setUploadState('上傳失敗'));
       }
     } catch (error) {
-      console.error("上傳錯誤:", error);
-      dispatch(setUploadState("上傳失敗"));
+      console.error('上傳錯誤:', error);
+      dispatch(setUploadState('上傳失敗'));
       return;
     } finally {
       if (worker) {
@@ -355,7 +356,7 @@ const NewQuote: React.FC = () => {
               <input
                 type="checkbox"
                 value="國際牌"
-                checked={conditionerSelectedOption.includes("國際牌")}
+                checked={conditionerSelectedOption.includes('國際牌')}
                 onChange={conditionerCheckboxHandle}
               />
               國際牌
@@ -365,7 +366,7 @@ const NewQuote: React.FC = () => {
               <input
                 type="checkbox"
                 value="日立"
-                checked={conditionerSelectedOption.includes("日立")}
+                checked={conditionerSelectedOption.includes('日立')}
                 onChange={conditionerCheckboxHandle}
               />
               日立
@@ -374,7 +375,7 @@ const NewQuote: React.FC = () => {
               <input
                 type="checkbox"
                 value="華菱"
-                checked={conditionerSelectedOption.includes("華菱")}
+                checked={conditionerSelectedOption.includes('華菱')}
                 onChange={conditionerCheckboxHandle}
               />
               華菱

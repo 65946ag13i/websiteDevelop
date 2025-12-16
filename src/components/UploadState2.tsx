@@ -1,13 +1,9 @@
 "use client";
-import { BsCloudUpload } from "react-icons/bs";
+
 import { AiOutlineVerticalAlignTop } from "react-icons/ai";
-import LinearProgress from "@mui/material/LinearProgress";
-import { useState } from "react";
-import { IoClose } from "react-icons/io5";
-import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
 import { useSession } from "next-auth/react";
 import UploadStateDialog from "@/components/app/quote/QuoteTable/dialog/UploadStateDialog";
-const UploadState2: React.FC<{}> = () => {
+const UploadState2 = () => {
   const moveToTop = () => {
     console.log("move to top");
     window.scrollTo({
@@ -15,16 +11,16 @@ const UploadState2: React.FC<{}> = () => {
       behavior: "smooth",
     });
   };
-  const { data, status } = useSession();
+  const { status } = useSession();
 
-  const {
-    fileTotalCount,
-    fileUploadPercentage,
-    uploadState,
-    numberOfCurrentFiles,
-  } = useAppSelector((state) => state.uploadState);
+  // const {
+  //   fileTotalCount,
+  //   fileUploadPercentage,
+  //   uploadState,
+  //   numberOfCurrentFiles,
+  // } = useAppSelector((state) => state.uploadState);
 
-  const [uploadBoxOpen, setUploadBoxOpen] = useState<Boolean>(false);
+  // const [uploadBoxOpen, setUploadBoxOpen] = useState<Boolean>(false);
   return (
     <>
       {/* 按鈕功能 */}

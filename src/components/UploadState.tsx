@@ -4,10 +4,10 @@ import { AiOutlineVerticalAlignTop } from "react-icons/ai";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { useAppDispatch, useAppSelector } from "@/redux/hook/reduxHook";
+import { useAppSelector } from "@/redux/hook/reduxHook";
 import { useSession } from "next-auth/react";
 
-const UploadState: React.FC<{}> = () => {
+const UploadState = () => {
   const moveToTop = () => {
     console.log("move to top");
     window.scrollTo({
@@ -15,7 +15,7 @@ const UploadState: React.FC<{}> = () => {
       behavior: "smooth",
     });
   };
-  const { data, status } = useSession();
+  const { status } = useSession();
 
   const {
     fileTotalCount,

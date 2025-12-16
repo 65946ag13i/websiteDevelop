@@ -1,8 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import URLImage from "@/components/image/URLImg";
-import ButtonModule from "@/components/button/ButtonModule";
+import { useMemo } from 'react';
+import URLImage from '@/components/image/URLImg';
+import ButtonModule from '@/components/button/ButtonModule';
+import React from 'react';
+
 interface Order {
   id: number;
   createdAt: string;
@@ -30,46 +32,18 @@ const UserQuote = ({
 }) => {
   //* 回到歷史報價單表格
   const backToQuoteTable = () => {
-    setFunctionSwitch("QuoteTable");
+    setFunctionSwitch('QuoteTable');
   };
-
-  if (isLoading) return <div>資料載入中...</div>;
-
-  console.log("quoteData:");
-  console.log(quoteData);
-  if (!quoteData)
-    return (
-      <>
-        <div className="text-red-500 text-xl">查無歷史資料</div>
-        <button onClick={backToQuoteTable}>回到報價單目錄</button>
-      </>
-    );
-
-  console.log("data:");
-  console.log(data);
-
-  if (!data) {
-    return (
-      <>
-        <button onClick={backToQuoteTable}>回到報價單目錄</button>
-        <div>查無資料</div>
-      </>
-    );
-    //! 改為錯誤頁面 確認後返回報價單
-  }
 
   //~ 將陣列字串依照名稱套入循環陣列中
   //* 將陣列字串依照名稱套入循環陣列中
-  const [imageArray, setImageArray] = useState<(string[] | null)[][]>([
-    [null, null],
-  ]);
-
-  const groupedImages = useMemo(() => {
+  const groupedImages: (string[] | null)[][] = useMemo(() => {
+    if (!data) return [[]];
     const images: string[] = data;
     const result: (string[] | null)[][] = [[null, null]];
 
     images.forEach((image) => {
-      const [firstIndex, secondIndex, fileIndex] = image.split("-").map(Number);
+      const [firstIndex, secondIndex, fileIndex] = image.split('-').map(Number);
 
       if (!result[firstIndex]) {
         result[firstIndex] = [];
@@ -83,10 +57,32 @@ const UserQuote = ({
     return result;
   }, [data]);
 
-  useEffect(() => {
-    setImageArray(groupedImages);
-  }, [groupedImages]);
   //~ 將陣列字串依照名稱套入循環陣列中
+
+  if (isLoading) return <div>資料載入中...</div>;
+
+  // console.log('quoteData:');
+  // console.log(quoteData);
+  if (!quoteData)
+    return (
+      <>
+        <div className="text-red-500 text-xl">查無歷史資料</div>
+        <button onClick={backToQuoteTable}>回到報價單目錄</button>
+      </>
+    );
+
+  // console.log('data:');
+  // console.log(data);
+
+  if (!data) {
+    return (
+      <>
+        <button onClick={backToQuoteTable}>回到報價單目錄</button>
+        <div>查無資料</div>
+      </>
+    );
+    //! 改為錯誤頁面 確認後返回報價單
+  }
 
   return (
     <div className="p-4 ">
@@ -117,7 +113,7 @@ const UserQuote = ({
               )
             )}
           </ul>
-          {quoteData.brands == "" ? null : (
+          {quoteData.brands == '' ? null : (
             <>
               <div className=" border-y-2 border-gray-800 ">額外的品牌需求</div>
               <div className="bg-white">{quoteData.brands}</div>
@@ -132,82 +128,79 @@ const UserQuote = ({
         <div className=" border-b-2 border-gray-800 ">提供的照片</div>
         <div className="bg-white flex flex-col items-center justify-center overflow-hidden">
           {/* 組別 */}
-          {imageArray.map((firstIndex, index) => {
+          {groupedImages.map((firstIndex, index) => {
             if (Array.isArray(firstIndex)) {
-              {
-                /* 內外 */
-                return (
-                  <>
-                    <div className="  px-1 mt-2 rounded-lg text-white bg-sky-500">
-                      第{index + 1}組內外機照片
-                    </div>
-                    <div className="border-b-2 border-gray-400 w-full">
-                      內機
-                    </div>
-                    {firstIndex[0] &&
-                      firstIndex[0].map((fileName) => {
-                        if (typeof fileName === "string") {
-                          const params = new URLSearchParams();
-                          params.append("userQuoteUUID", UUID);
-                          params.append("fileName", fileName);
-                          // return <div>{`${fileName}`}</div>;
-                          return (
-                            <div
-                              className={`w-[50%] flex items-center justify-center m-2`}
-                              key={`secondIndex-${fileName}`}
-                            >
-                              <URLImage
-                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
-                                loading="lazy"
-                                onError={(e) => {
-                                  console.log("URLImage error");
-                                  console.log(e);
-                                }}
-                                alt={fileName}
-                                key={fileName}
-                                fill
-                                className="overflow-hidden rounded-lg object-cover"
-                              />
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
-                    <div className="border-b-2 border-gray-400 w-full ">
-                      外機
-                    </div>
-                    {firstIndex[1] &&
-                      firstIndex[1].map((fileName) => {
-                        if (typeof fileName === "string") {
-                          const params = new URLSearchParams();
-                          params.append("userQuoteUUID", UUID);
-                          params.append("fileName", fileName);
-                          // return <div>{`${fileName}`}</div>;
-                          return (
-                            <div
-                              className={`w-[50%] flex items-center justify-center m-2`}
-                              key={`secondIndex-${fileName}`}
-                            >
-                              <URLImage
-                                src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
-                                loading="lazy"
-                                onError={(e) => {
-                                  console.log("URLImage error");
-                                  console.log(e);
-                                }}
-                                alt={fileName}
-                                key={fileName}
-                                fill
-                                className="overflow-hidden rounded-lg"
-                              />
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
-                  </>
-                );
-              }
+              /* 內外 */
+              return (
+                <div
+                  key={`group-container-${index}`}
+                  className="flex flex-col justify-center items-center w-full"
+                >
+                  <div className="px-2 mt-2 rounded-lg text-white bg-sky-500 w-auto inline-block">
+                    第{index + 1}組內外機照片
+                  </div>
+                  <div className="border-b-2 border-gray-400 w-full">內機</div>
+                  {firstIndex[0] &&
+                    firstIndex[0].map((fileName) => {
+                      if (typeof fileName === 'string') {
+                        const params = new URLSearchParams();
+                        params.append('userQuoteUUID', UUID);
+                        params.append('fileName', fileName);
+                        // return <div>{`${fileName}`}</div>;
+                        return (
+                          <div
+                            className={`w-[50%] flex items-center justify-center m-2`}
+                            key={`secondIndex-${fileName}`}
+                          >
+                            <URLImage
+                              src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
+                              loading="lazy"
+                              onError={(e) => {
+                                console.log('URLImage error');
+                                console.log(e);
+                              }}
+                              alt={fileName}
+                              key={fileName}
+                              fill
+                              className="overflow-hidden rounded-lg object-cover"
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  <div className="border-b-2 border-gray-400 w-full ">外機</div>
+                  {firstIndex[1] &&
+                    firstIndex[1].map((fileName) => {
+                      if (typeof fileName === 'string') {
+                        const params = new URLSearchParams();
+                        params.append('userQuoteUUID', UUID);
+                        params.append('fileName', fileName);
+                        // return <div>{`${fileName}`}</div>;
+                        return (
+                          <div
+                            className={`w-[50%] flex items-center justify-center m-2`}
+                            key={`secondIndex-${fileName}`}
+                          >
+                            <URLImage
+                              src={`${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/quoteTable/searchUserImage?${params.toString()}`}
+                              loading="lazy"
+                              onError={(e) => {
+                                console.log('URLImage error');
+                                console.log(e);
+                              }}
+                              alt={fileName}
+                              key={fileName}
+                              fill
+                              className="overflow-hidden rounded-lg"
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                </div>
+              );
             }
             return null;
           })}

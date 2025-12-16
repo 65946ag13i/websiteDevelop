@@ -1,10 +1,12 @@
-import { useState, useEffect, ImgHTMLAttributes } from "react";
-import Image, { ImageProps } from "next/image";
-
-interface ServerImageProps extends Omit<ImageProps, "onError" | "onLoad"> {
+/* eslint-disable @next/next/no-img-element */
+import { useState, useEffect } from 'react';
+import { ImageProps } from 'next/image';
+import React from 'react';
+interface ServerImageProps extends Omit<ImageProps, 'onError' | 'onLoad'> {
   src: string;
   alt: string;
-  onError?: (error: Event | string) => void;
+  // eslint-disable-next-line no-unused-vars
+  onError?: (_: Event | string) => void;
   onLoad?: () => void;
   fallbackText?: string;
   retryCount?: number;
@@ -17,7 +19,7 @@ const URLImage: React.FC<ServerImageProps> = ({
   alt,
   onError,
   onLoad,
-  fallbackText = "圖片載入失敗",
+  fallbackText = '圖片載入失敗',
   retryCount = 2,
   retryDelay = 1000,
   className,
@@ -36,7 +38,7 @@ const URLImage: React.FC<ServerImageProps> = ({
   }, [src]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Image loading error:", e);
+    console.error('Image loading error:', e);
 
     if (retryAttempts < retryCount) {
       // 重试机制
@@ -51,7 +53,7 @@ const URLImage: React.FC<ServerImageProps> = ({
       // 所有重试尝试都失败
       setIsLoading(false);
       setHasError(true);
-      if (onError) onError(e.nativeEvent);
+      if (onError) onError?.(e.nativeEvent);
     }
   };
 
@@ -72,10 +74,10 @@ const URLImage: React.FC<ServerImageProps> = ({
   if (hasError) {
     return (
       <div
-        className={`relative flex flex-col items-center justify-center bg-gray-100 text-gray-400 border border-dashed border-gray-300 rounded-lg ${className || ""}`}
+        className={`relative flex flex-col items-center justify-center bg-gray-100 text-gray-400 border border-dashed border-gray-300 rounded-lg ${className || ''}`}
         style={{
-          width: props.width || "100%",
-          height: props.height || "100%",
+          width: props.width || '100%',
+          height: props.height || '100%',
         }}
       >
         <svg
@@ -118,7 +120,7 @@ const URLImage: React.FC<ServerImageProps> = ({
   }
 
   return (
-    <div className={`relative inline-block overflow-hidden ${className || ""}`}>
+    <div className={`relative inline-block overflow-hidden ${className || ''}`}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
           <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>

@@ -2,8 +2,7 @@ import { authOptions } from "@/utils/appRouter/api/auth/auth-config";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
-import { initDataSourse } from "@/backend/data-source";
-import { userQuote } from "@/backend/entities/userQuote";
+
 import {
   checkOrCreateFolder,
   sanitizeInput,
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (!session.user || !session.user.id) {
       return NextResponse.json(
         { message: "User ID not found in session" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
     if (!quoteUUID || typeof quoteUUID !== "string") {
       return NextResponse.json(
         { message: "Invalid quote ID/無效ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
         {
           message: "查無使用者目錄/no user directory found",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -56,7 +55,7 @@ export async function GET(request: NextRequest) {
         {
           message: "查無UUID目錄/no UUID directory found",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -65,7 +64,7 @@ export async function GET(request: NextRequest) {
     if (images.length === 0) {
       return NextResponse.json(
         { message: "No images found/無圖片" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -89,7 +88,7 @@ export async function GET(request: NextRequest) {
     console.error("Error in SearchUserQuote GET request:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

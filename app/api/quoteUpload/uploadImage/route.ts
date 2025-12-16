@@ -13,7 +13,6 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 import { createWriteStream, createReadStream } from "fs";
-import { finished, pipeline } from "stream/promises";
 
 export async function POST(req: NextRequest) {
   let session;
@@ -22,11 +21,12 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json(
         { message: "帳號未驗證/Unauthrized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
   } catch (error) {
-    return NextResponse.json({ message: "sever error" }, { status: 500 });
+    console.error("Upload error:", error);
+    return NextResponse.json({ message: "server error" }, { status: 500 });
   }
 
   try {
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         "User",
         userID,
         fileUUID,
-        fileDirName
+        fileDirName,
       );
       console.log("fileDirPath路徑:" + fileDirPath);
       //~ 創建分片資料夾
@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
           await fs.access(dirPath); //查找是否有該位置
           console.log("已有目錄");
         } catch (error) {
+          console.error("uploadImageError:", error);
           await fs.mkdir(dirPath, { recursive: true });
           console.log(`資料夾不存在，已建立：${dirPath}`);
         }
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
       //* fileDir -> fileSilce
       const fileSliceName = path.join(
         fileDirPath,
-        `${fileNameParse.name}-SliceIndex_${SliceIndex}-totalChunks_${totalChunks}-photoNumber_${photoNumber}`
+        `${fileNameParse.name}-SliceIndex_${SliceIndex}-totalChunks_${totalChunks}-photoNumber_${photoNumber}`,
       );
       //+ 分片檔案名路徑後儲存
       console.log("fileSliceName路徑:" + fileDirPath);
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
           //* stat確認是否為檔案
           const stats = await fs.stat(filePath);
           return { name: file, isFile: stats.isFile() };
-        })
+        }),
       );
       console.log("filesNameArray.length:", filesNameArray);
 
@@ -162,7 +163,7 @@ export async function POST(req: NextRequest) {
           "User",
           userID,
           fileUUID,
-          fileName
+          fileName,
         );
 
         const writeStream = createWriteStream(filePath);
@@ -205,7 +206,7 @@ export async function POST(req: NextRequest) {
             try {
               console.log(
                 `尝试删除分片文件夹 (尝试 ${retryCount + 1}/${maxRetries}):`,
-                fileDirPath
+                fileDirPath,
               );
               await fs.rm(fileDirPath, { recursive: true, force: true });
               console.log("已成功删除:", fileDirPath);
@@ -215,14 +216,14 @@ export async function POST(req: NextRequest) {
               if (retryCount >= maxRetries) {
                 console.error(
                   "删除文件夹失败，已达到最大重试次数:",
-                  deleteError
+                  deleteError,
                 );
                 // 可以选择记录错误但不中断流程
                 break;
               }
               // 等待一段时间后重试
               await new Promise((resolve) =>
-                setTimeout(resolve, 200 * retryCount)
+                setTimeout(resolve, 200 * retryCount),
               );
             }
           }
@@ -235,14 +236,14 @@ export async function POST(req: NextRequest) {
       } else {
         console.log("Cannot merge files at this time");
         console.log(
-          `currentSliceIndex:${SliceIndex},totalChunks:${totalChunks}`
+          `currentSliceIndex:${SliceIndex},totalChunks:${totalChunks}`,
         );
         return NextResponse.json(
           {
             message:
               "The files cannot be mergeed because the required number has not been reached",
           },
-          { status: 200 }
+          { status: 200 },
         );
       }
     } else {

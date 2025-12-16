@@ -13,11 +13,11 @@ function deepClone<T>(item: T): DeepClone<T> {
   if (Array.isArray(item)) {
     // 递归克隆数组中的每个元素
     return item.map(deepClone) as DeepClone<T>; // 使用类型断言确保类型匹配
-  } else if (item && typeof item === "object") {
+  } else if (item && typeof item === 'object') {
     // 递归克隆对象的每个属性
     const clonedObj: { [key: string]: unknown } = {};
     for (const key in item) {
-      if (item.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
         clonedObj[key] = deepClone(item[key]); // 递归克隆每个属性
       }
     }

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!session.user || !session.user.id) {
       return NextResponse.json(
         { message: "User ID not found in session" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -37,14 +37,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!UUID || typeof UUID !== "string") {
       return NextResponse.json(
         { message: "Invalid UUID/無效UUID" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     //* 檢查檔名
     if (!fileName || typeof fileName !== "string") {
       return NextResponse.json(
         { message: "Invalid file name/無效檔案名稱" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       "User",
       userID,
       UUID,
-      fileName
+      fileName,
     );
     console.log(fileDirPath);
     //* 檢查檔案存在
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         {
           message: "查無圖片/no user image found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         {
           message: "查無圖片/no user image found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     console.error("Error in GET request:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

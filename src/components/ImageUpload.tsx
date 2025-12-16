@@ -1,25 +1,24 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { deepCloneArray } from "@/utils/deepcloneArray";
-
+import Image from 'next/image';
+import { deepCloneArray } from '@/utils/deepcloneArray';
+import React from 'react';
 async function AddPhoto(fileArray: FileList) {
   //將fileList轉為類陣列
   const newURL = Array.from(fileArray).map((file) => {
     return new Promise((resolve, reject) => {
       const fileName = file.name;
       //檢查格式是否為jpeg
-      if (file.type === "image/jpeg") {
+      if (file.type === 'image/jpeg') {
         const photofile = new FileReader();
 
         photofile.onerror = function (error) {
-          if (error) reject(new Error("jpg FileReader returned null"));
+          if (error) reject(new Error('jpg FileReader returned null'));
         };
 
         photofile.onload = function (event) {
           const result = event.target?.result as string | null;
-          if (!result) reject(new Error("FileReader returned null"));
+          if (!result) reject(new Error('FileReader returned null'));
 
           //-----image---
 
@@ -39,22 +38,22 @@ async function AddPhoto(fileArray: FileList) {
 
         photofile.onload = function (event) {
           const result = event.target?.result as string | null;
-          if (!result) reject(new Error("FileReader returned null"));
+          if (!result) reject(new Error('FileReader returned null'));
 
           //-----image---
           //建立image執行結果
           const img = new window.Image();
           img.onload = async () => {
-            if (!result) return reject(new Error("FileReader result is null"));
+            if (!result) return reject(new Error('FileReader result is null'));
             //建立canvas 轉換jpeg
-            const canvus = document.createElement("canvas");
-            const ctx = canvus.getContext("2d");
+            const canvus = document.createElement('canvas');
+            const ctx = canvus.getContext('2d');
             if (ctx) {
               canvus.width = img.width;
               canvus.height = img.height;
               ctx.drawImage(img, 0, 0);
               //canvas轉換為url並改為jpeg壓縮
-              const url = canvus.toDataURL("image/jpeg", 0.8);
+              const url = canvus.toDataURL('image/jpeg', 0.8);
               try {
                 //canvas轉換為blob格式存檔
                 const jpgFile = await new Promise<File>((resolve, reject) => {
@@ -62,21 +61,22 @@ async function AddPhoto(fileArray: FileList) {
                     (blob) => {
                       if (blob) {
                         const file = new File([blob], fileName, {
-                          type: "image/jpeg",
+                          type: 'image/jpeg',
                         });
                         resolve(file);
                       } else {
-                        reject(new Error("Failed to create blob from canvas"));
+                        reject(new Error('Failed to create blob from canvas'));
                       }
                     },
-                    "image/jpeg",
+                    'image/jpeg',
                     0.8
                   );
                 });
 
                 resolve({ url: url, file: jpgFile });
               } catch (error) {
-                reject(new Error("Error generating jpgFile from canvas"));
+                console.error('uploadError:', error);
+                reject(new Error('Error generating jpgFile from canvas'));
               }
             }
           };
@@ -94,6 +94,7 @@ async function AddPhoto(fileArray: FileList) {
     const photoURL = await Promise.all(newURL);
     return photoURL as { url: string; file: File }[];
   } catch (error) {
+    console.error('addPhotoError', error);
     return [];
   }
 
@@ -190,7 +191,7 @@ const ImageUpload: React.FC<ChildProps> = ({
       }
     });
 
-    e.target.value = "";
+    e.target.value = '';
   };
   //刪除照片
   const deleteURLAndFile = (
@@ -230,11 +231,11 @@ const ImageUpload: React.FC<ChildProps> = ({
         {photoFile &&
           photoFile.map((_, index) => (
             <div
-              key={"group" + index}
+              key={'group' + index}
               className=" border-2 border-gray-950 rounded shadow m-2 p-2"
             >
               <div className="">第{index + 1}組內外機照片</div>
-              <div className="text-rose-600">"每個上傳限制兩張圖片"</div>
+              <div className="text-rose-600">每個上傳限制兩張圖片</div>
               <div
                 className="flex flex-col border-2 border-gray-950 m-2 p-2 rounded bg-webGreenToBrown-400"
                 key={`index-${index}`}
@@ -248,7 +249,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                     >
                       <Image
                         src={photo}
-                        key={index2 + "-photo-" + index + "-file"}
+                        key={index2 + '-photo-' + index + '-file'}
                         alt="上傳圖片預覽"
                         width={150}
                         height={100}
@@ -268,15 +269,15 @@ const ImageUpload: React.FC<ChildProps> = ({
                   ))}
                 <div className="m-1 p-1">
                   <label
-                    htmlFor={"group" + index + "-file-" + "1"}
+                    htmlFor={'group' + index + '-file-' + '1'}
                     className="m-1 p-1 border-2 border-gray-900 rounded shadow"
                   >
                     添加內機照片
                   </label>
                   <input
                     type="file"
-                    style={{ display: "none" }}
-                    id={"group" + index + "-file-" + "1"}
+                    style={{ display: 'none' }}
+                    id={'group' + index + '-file-' + '1'}
                     multiple
                     onChange={(file) => {
                       createURLAndSaveFile(file, index, 0);
@@ -294,7 +295,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                     >
                       <Image
                         src={photo}
-                        key={index2 + "-photo-" + index + "-file2"}
+                        key={index2 + '-photo-' + index + '-file2'}
                         className="w-[80%] mx-auto m-2 border-2 border-gray-900"
                         alt="上傳圖片預覽"
                         width={150}
@@ -314,7 +315,7 @@ const ImageUpload: React.FC<ChildProps> = ({
                   ))}
                 <div className="m-1 p-1">
                   <label
-                    htmlFor={"group" + index + "-file-" + "2"}
+                    htmlFor={'group' + index + '-file-' + '2'}
                     className="p-1 m-2 border-2 border-gray-900 rounded shadow"
                   >
                     添加外機照片
@@ -322,8 +323,8 @@ const ImageUpload: React.FC<ChildProps> = ({
                   <input
                     type="file"
                     multiple
-                    style={{ display: "none" }}
-                    id={"group" + index + "-file-" + "2"}
+                    style={{ display: 'none' }}
+                    id={'group' + index + '-file-' + '2'}
                     onChange={(file) => {
                       createURLAndSaveFile(file, index, 1);
                     }}
@@ -332,32 +333,28 @@ const ImageUpload: React.FC<ChildProps> = ({
               </div>
               {index !== 0 && (
                 <div>
-                  <label>
-                    <button
-                      id={"deleteFile" + index}
-                      className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
-                      onClick={() => {
-                        deleteFileButton(index);
-                      }}
-                    >
-                      刪除本組內外機照片
-                    </button>
-                  </label>
+                  <button
+                    id={'deleteFile' + index}
+                    className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
+                    onClick={() => {
+                      deleteFileButton(index);
+                    }}
+                  >
+                    刪除本組內外機照片
+                  </button>
                 </div>
               )}
               {index !== 4 && (
                 <div>
-                  <label>
-                    <button
-                      className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
-                      id={"deleteFile" + index}
-                      onClick={() => {
-                        addFile();
-                      }}
-                    >
-                      增加一組內外機照片
-                    </button>
-                  </label>
+                  <button
+                    className="px-1 m-1 border-2 border-gray-900 rounded-lg shadow"
+                    id={'deleteFile' + index}
+                    onClick={() => {
+                      addFile();
+                    }}
+                  >
+                    增加一組內外機照片
+                  </button>
                 </div>
               )}
             </div>

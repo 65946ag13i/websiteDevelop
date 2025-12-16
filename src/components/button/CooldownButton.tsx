@@ -21,7 +21,7 @@ const CooldownButton: React.FC<CountdownButtonProps> = ({
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     if (isActive && count !== null && count > 0) {
       timer = setInterval(() => {

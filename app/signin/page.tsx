@@ -58,7 +58,7 @@ const ComponentName: React.FC = () => {
       if (password.length > 30 || password.length < 3) {
         passwordError = checkError(
           passwordError,
-          "密碼長度應該 8 到 30 字元之間"
+          "密碼長度應該 8 到 30 字元之間",
         );
       }
       const containLetter = /^(?=.*[a-zA-Z]).*$/;
@@ -114,6 +114,7 @@ const ComponentName: React.FC = () => {
           router.replace("/quote");
         }
       } catch (e) {
+        console.error("伺服器登入失敗:", e);
         setmessage("伺服器登入失敗");
       }
     } else {

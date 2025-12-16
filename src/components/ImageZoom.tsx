@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const ResizableImage = () => {
@@ -7,22 +7,25 @@ const ResizableImage = () => {
   const [isResizing, setIsResizing] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0 });
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isResizing) {
-      const deltaX = e.clientX - lastMousePos.x;
-      console.log("e.clientX當前=" + e.clientX);
-      console.log("lastMousePos.x上次=" + lastMousePos.x);
-      setWidth((prevWidth) => Math.max(prevWidth + deltaX, 50)); // 设定最小宽度
-      console.log(width);
-      setLastMousePos({ x: e.clientX });
-    }
-  };
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isResizing) {
+        const deltaX = e.clientX - lastMousePos.x;
+        console.log("e.clientX當前=" + e.clientX);
+        console.log("lastMousePos.x上次=" + lastMousePos.x);
+        setWidth((prevWidth) => Math.max(prevWidth + deltaX, 50)); // 设定最小宽度
+        console.log(width);
+        setLastMousePos({ x: e.clientX });
+      }
+    },
+    [isResizing, lastMousePos, width],
+  );
 
   const handleMouseUp = () => {
     setIsResizing(false);
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
     setIsResizing(true);
     setLastMousePos({ x: e.clientX });
   };
@@ -42,7 +45,7 @@ const ResizableImage = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing, width, lastMousePos]); // 依赖项为 isResizing
+  }, [isResizing, width, lastMousePos, handleMouseMove]); // 依赖项为 isResizing
 
   return (
     <div className="relative inline-block">
@@ -54,9 +57,9 @@ const ResizableImage = () => {
         style={{ height: "auto" }} // 高度自动适应宽度
         className="border-2 border-gray-300 object-cover"
       />
-      <div
+      <button
         className="absolute right-0 bottom-0 w-4 h-4 cursor-ew-resize"
-        onMouseDown={handleMouseDown}
+        onClick={handleMouseDown}
       />
     </div>
   );

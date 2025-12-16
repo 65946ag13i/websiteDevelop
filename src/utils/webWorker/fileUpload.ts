@@ -18,7 +18,7 @@ self.onmessage = async function (event) {
     const start = index * chunkSize;
     const end = Math.min(start + chunkSize, file.size);
     const chunk = file.slice(start, end);
-    const props: chunkUploadWithRetry = {
+    const props: ChunkUploadWithRetry = {
       SliceIndex: index,
       chunk,
       totalChunks,
@@ -30,7 +30,7 @@ self.onmessage = async function (event) {
   }
 
   //上傳
-  interface chunkUploadWithRetry {
+  interface ChunkUploadWithRetry {
     SliceIndex: number;
     chunk: Blob;
     totalChunks: number;
@@ -47,7 +47,7 @@ self.onmessage = async function (event) {
     totalChunks,
     fileUUID,
     retries = 3,
-  }: chunkUploadWithRetry) => {
+  }: ChunkUploadWithRetry) => {
     while (retries > 0) {
       try {
         const formdata = new FormData();
@@ -64,7 +64,7 @@ self.onmessage = async function (event) {
             method: "POST",
             credentials: "include",
             body: formdata,
-          }
+          },
         );
 
         if (!response.ok) {
@@ -77,9 +77,10 @@ self.onmessage = async function (event) {
 
         return { success: true, SliceIndex };
       } catch (e) {
+        console.log("chunkUploadError:", e);
         retries--;
         console.log(
-          `分片,${fileUUID},第${SliceIndex}個,第${retries}次,上傳失敗`
+          `分片,${fileUUID},第${SliceIndex}個,第${retries}次,上傳失敗`,
         );
         if (retries == 0) {
           //+ 分片上傳失敗
@@ -91,7 +92,7 @@ self.onmessage = async function (event) {
   };
 
   //併發控制
-  interface concurrently {
+  interface Concurrently {
     chunkQue: (() => Promise<uploadReturn>)[];
     maxParallelUpload: number;
   }
@@ -100,7 +101,7 @@ self.onmessage = async function (event) {
   const concurrently = async ({
     chunkQue,
     maxParallelUpload,
-  }: concurrently) => {
+  }: Concurrently) => {
     const executing: Promise<void>[] = [];
     const results: uploadReturn[] = [];
     let i = 0;
@@ -132,7 +133,7 @@ self.onmessage = async function (event) {
 
   //* 併發結果確認
   try {
-    const input: concurrently = { chunkQue, maxParallelUpload };
+    const input: Concurrently = { chunkQue, maxParallelUpload };
 
     const result = await concurrently(input);
     const allSuccess = result.every((result) => {
@@ -146,7 +147,7 @@ self.onmessage = async function (event) {
       });
     } else {
       const errorMessage = result.filter(
-        (success) => success.success === false
+        (success) => success.success === false,
       );
       self.postMessage({
         success: "failure",

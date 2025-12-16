@@ -1,5 +1,4 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { IoClose } from "react-icons/io5";
 import { BsCloudUpload } from "react-icons/bs";
 import LinearProgress from "@mui/material/LinearProgress";
 import React from "react";
@@ -13,9 +12,7 @@ import {
   setNumberOfCurrentFiles,
 } from "@/redux/features/upload/uploadSlice";
 
-type Props = {};
-
-const UploadStateDialog = (props: Props) => {
+const UploadStateDialog = () => {
   const dispatch = useAppDispatch();
 
   const {

@@ -19,7 +19,7 @@ export class oauth2List {
     /^[a-zA-Z\u00C0-\u017F\u4e00-\u9fa5\u0600-\u06FF\u0400-\u04FF·\-\s]{1,50}$/,
     {
       message: "非法姓名輸入",
-    }
+    },
   )
   name: string = "";
 

@@ -1,32 +1,11 @@
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { User } from "@/backend/entities/User"; // 引入 User 實體
-import { initDataSourse } from "@/backend/data-source"; //  TypeORM 的資料源
-import bcrypt from "bcrypt";
-import { oauth2List } from "@/backend/entities/oauth2List";
-import { validate } from "class-validator";
-import { NextAuthOptions } from "next-auth";
-
-declare module "next-auth" {
-  //套件擴展
-  interface Session {
-    user: {
-      id: string; // 添加自定義屬性
-      name?: string | null;
-      email?: string | null;
-      // image?: string | null;
-    };
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    // image?: string | null;
-  }
-}
+import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { User } from '@/backend/entities/User'; // 引入 User 實體
+import { initDataSourse } from '@/backend/data-source'; //  TypeORM 的資料源
+import bcrypt from 'bcrypt';
+import { oauth2List } from '@/backend/entities/oauth2List';
+import { validate } from 'class-validator';
+import { NextAuthOptions } from 'next-auth';
 
 interface Credentials {
   email: string;
@@ -41,27 +20,27 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
         },
       },
     }),
 
     //內建登入 純英文 自定義登入可使用
     CredentialsProvider({
-      id: "login",
+      id: 'login',
       //api導航(navigation)
       credentials: {
         //form不寫label 寫在這裡
-        email: { label: "email", type: "email" },
-        password: { label: "password", type: "password" },
+        email: { label: 'email', type: 'email' },
+        password: { label: 'password', type: 'password' },
       },
       async authorize(credentials: Credentials | undefined) {
         // console.log("驗證開始");
         try {
           if (!credentials || !credentials.email || !credentials.password) {
-            throw new Error("Email and password are required");
+            throw new Error('Email and password are required');
           }
           // console.log(credentials.email);
           // console.log("密碼驗證" + credentials.password);
@@ -71,12 +50,12 @@ export const authOptions: NextAuthOptions = {
           //資料庫找使用者
           const user = await userRepository.findOne({
             where: { email: email },
-            select: ["id", "email", "name", "password"],
+            select: ['id', 'email', 'name', 'password'],
           });
 
           if (!user || !user.id || !user.email) {
-            console.error("無法找到eamill");
-            throw new Error("無法找到eamill");
+            console.error('無法找到eamill');
+            throw new Error('無法找到eamill');
           }
           //密碼加鹽比對
           const isValidPassword = await bcrypt.compare(password, user.password); //驗證password
@@ -88,36 +67,36 @@ export const authOptions: NextAuthOptions = {
               name: user.name,
             };
           } else {
-            console.error("密碼錯誤");
-            throw new Error("密碼錯誤");
+            console.error('密碼錯誤');
+            throw new Error('密碼錯誤');
           }
         } catch (error) {
           if (error instanceof Error) {
-            console.error("日誌拋出錯誤");
+            console.error('日誌拋出錯誤');
 
             // console.dir(error, { depth: null });
             throw new Error(error.message);
           } else {
-            throw new Error("An unexpected error occurred");
+            throw new Error('An unexpected error occurred');
           }
         }
       },
     }),
   ],
   pages: {
-    signIn: "/signin", // 指定自定义的登录页面
-    error: "/signin",
+    signIn: '/signin', // 指定自定义的登录页面
+    error: '/signin',
   },
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account && account.provider && user && user.email && user.name) {
         //檢測登入方式 login直接true
-        if (account?.provider === "login") {
+        if (account?.provider === 'login') {
           return true;
         }
         try {
-          if (account?.provider === "google" && user?.email) {
+          if (account?.provider === 'google' && user?.email) {
             const DataSourse = await initDataSourse();
             const userRepository = await DataSourse.getRepository(User);
             //查找email是否已經建立資料
@@ -125,7 +104,7 @@ export const authOptions: NextAuthOptions = {
               where: { email: user.email },
             });
             //不存在就建立使用者資料
-            console.log("使用者存在?:");
+            console.log('使用者存在?:');
             console.dir(existingUser, { depth: null });
             if (!existingUser) {
               //建立事務失敗就回滾
@@ -153,17 +132,17 @@ export const authOptions: NextAuthOptions = {
                     //驗證錯誤
                     if (userErrors.length > 0) {
                       const filiterUserErrors = userErrors.filter((error) =>
-                        ["email", "name"].includes(error.property)
+                        ['email', 'name'].includes(error.property)
                       );
                       if (filiterUserErrors.length > 0) {
-                        console.log("filiterUserErrors?:");
+                        console.log('filiterUserErrors?:');
                         console.dir(filiterUserErrors, { depth: null });
                         return false;
                       }
                     }
                     const oauth2errors = await validate(useroauth);
                     if (oauth2errors.length > 0) {
-                      console.log("oauth2errors?:");
+                      console.log('oauth2errors?:');
                       console.dir(oauth2errors, { depth: null });
                       return false;
                     }
@@ -179,11 +158,11 @@ export const authOptions: NextAuthOptions = {
                 return false;
               }
             }
-            console.log("返回true");
+            console.log('返回true');
             return true;
           }
         } catch (e) {
-          console.error("Error in signIn callback:", e);
+          console.error('Error in signIn callback:', e);
           return false; // 錯誤時拒絕登入
         }
 
@@ -202,7 +181,7 @@ export const authOptions: NextAuthOptions = {
         // 用 email 查資料庫，取得 User.id
         const dbUser = await userRepository.findOne({
           where: { email: user.email },
-          select: ["id", "name", "email"],
+          select: ['id', 'name', 'email'],
         });
 
         if (dbUser) {
@@ -234,14 +213,14 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   logger: {
     error(code: string, ...message) {
-      console.error("NextAuth Error:", code, message);
+      console.error('NextAuth Error:', code, message);
       // 可以在此处集成到外部的日志服务，例如 Sentry 或 Loggly
     },
     warn(code: string, ...message) {
-      console.warn("NextAuth Warning:", code, message);
+      console.warn('NextAuth Warning:', code, message);
     },
     debug(code: string, ...message) {
-      console.debug("NextAuth Debug:", code, message);
+      console.debug('NextAuth Debug:', code, message);
     },
   },
   debug: true,

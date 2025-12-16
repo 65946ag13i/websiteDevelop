@@ -22,7 +22,7 @@ export class VerificationCode {
     {},
     {
       message: "信箱不合規",
-    }
+    },
   )
   email: string = "";
   @CreateDateColumn({

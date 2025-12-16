@@ -3,7 +3,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getClientQueryClient } from "./queryClient";
-
+import React from "react";
 export default function ReactQueryProvider({
   children,
 }: {

@@ -42,7 +42,7 @@ interface EmailResult {
 export default async function sendEmailMiddleware(
   Language: string,
   purpose: string,
-  useMail: string
+  useMail: string,
 ): Promise<EmailResult> {
   const languageTemplates = emailTemplates[Language];
   if (!languageTemplates) {

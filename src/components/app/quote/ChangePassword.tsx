@@ -1,70 +1,68 @@
-//
+import { signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { useCooldownCallback } from '@/utils/useHook/useDebounceCallback';
+import React from 'react';
 
-import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { useCooldownCallback } from "@/utils/useHook/useDebounceCallback";
-//
+const ChangePassword = () => {
+  const [currentPassword, setCurrentPassword] = useState('');
 
-const ChangePassword: React.FC = () => {
-  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState('');
 
-  const [newPassword, setNewPassword] = useState("");
-
-  const [checkPassword, setCheckPassword] = useState("");
-  const [severMessage, setSeverMessage] = useState("");
+  const [checkPassword, setCheckPassword] = useState('');
+  const [severMessage, setSeverMessage] = useState('');
   //* 確認密碼
   const [passwordIsVailad, setPasswordIsVailad] = useState<boolean>(true);
-  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
 
-  //~ 密碼驗證
-  const passwordRegexCheck = () => {
-    const passwordRegex =
-      /^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/;
-    //* 驗證整體密碼
-    if (!newPassword) {
-      setPasswordIsVailad(true); //+ 關閉提示
-
-      return;
-    } else if (passwordRegex.test(newPassword)) {
-      setPasswordIsVailad(true); //+ 關閉提示
-
-      return;
-    } else {
-      setPasswordIsVailad(false); //+ 打開提示
-    }
-
-    if (newPassword.length > 30 || newPassword.length < 8) {
-      setPasswordErrorMessage("密碼長度應該 8 到 30 字元之間");
-      return;
-    }
-
-    const containLetter = /^(?=.*[a-zA-Z]).*$/;
-    if (!containLetter.test(newPassword)) {
-      setPasswordErrorMessage("應該包含一個大寫或小寫!");
-      return;
-    }
-
-    const passwordNumber = /^(?=.*\d).*$/;
-    if (!passwordNumber.test(newPassword)) {
-      setPasswordErrorMessage("應該包含一個數字");
-      return;
-    }
-
-    const illegalCharRegex = /[^ -~]/;
-    if (illegalCharRegex.test(newPassword)) {
-      setPasswordErrorMessage("密碼包含非法字符");
-      return;
-    }
-
-    const dangerousCharsRegex = /[<>&'"]/;
-    if (dangerousCharsRegex.test(newPassword)) {
-      setPasswordErrorMessage("密碼包含不允許的字符");
-      return;
-    }
-
-    setPasswordErrorMessage("");
-  };
   useEffect(() => {
+    //~ 密碼驗證
+    const passwordRegexCheck = () => {
+      const passwordRegex =
+        /^(?=.{8,30}$)(?=.*[a-zA-Z])(?=.*\d)(?!.*[^ -~])(?!.*[<>&'"]).*$/;
+      //* 驗證整體密碼
+      if (!newPassword) {
+        setPasswordIsVailad(true); //+ 關閉提示
+
+        return;
+      } else if (passwordRegex.test(newPassword)) {
+        setPasswordIsVailad(true); //+ 關閉提示
+
+        return;
+      } else {
+        setPasswordIsVailad(false); //+ 打開提示
+      }
+
+      if (newPassword.length > 30 || newPassword.length < 8) {
+        setPasswordErrorMessage('密碼長度應該 8 到 30 字元之間');
+        return;
+      }
+
+      const containLetter = /^(?=.*[a-zA-Z]).*$/;
+      if (!containLetter.test(newPassword)) {
+        setPasswordErrorMessage('應該包含一個大寫或小寫!');
+        return;
+      }
+
+      const passwordNumber = /^(?=.*\d).*$/;
+      if (!passwordNumber.test(newPassword)) {
+        setPasswordErrorMessage('應該包含一個數字');
+        return;
+      }
+
+      const illegalCharRegex = /[^ -~]/;
+      if (illegalCharRegex.test(newPassword)) {
+        setPasswordErrorMessage('密碼包含非法字符');
+        return;
+      }
+
+      const dangerousCharsRegex = /[<>&'"]/;
+      if (dangerousCharsRegex.test(newPassword)) {
+        setPasswordErrorMessage('密碼包含不允許的字符');
+        return;
+      }
+
+      setPasswordErrorMessage('');
+    };
     const passworVailadTimer = setTimeout(() => {
       passwordRegexCheck();
     }, 900);
@@ -80,19 +78,19 @@ const ChangePassword: React.FC = () => {
   const [passwordIsSame, setPasswordIsSame] = useState<boolean>(false);
 
   //* 密碼相同確認
-  const checkPasswordFC = () => {
-    //+ 新密碼 與 確認密碼 相同 ， 排除新舊空字串
-    console.log(newPassword === checkPassword);
-    if (!newPassword && !checkPassword) {
-      setPasswordIsSame(false); //+ 關閉錯誤
-    } else if (newPassword === checkPassword) {
-      setPasswordIsSame(false); //+ 關閉錯誤
-    } else {
-      setPasswordIsSame(true); //+ 打開錯誤
-    }
-  };
 
   useEffect(() => {
+    const checkPasswordFC = () => {
+      //+ 新密碼 與 確認密碼 相同 ， 排除新舊空字串
+      console.log(newPassword === checkPassword);
+      if (!newPassword && !checkPassword) {
+        setPasswordIsSame(false); //+ 關閉錯誤
+      } else if (newPassword === checkPassword) {
+        setPasswordIsSame(false); //+ 關閉錯誤
+      } else {
+        setPasswordIsSame(true); //+ 打開錯誤
+      }
+    };
     const timer = setTimeout(() => {
       checkPasswordFC();
     }, 900);
@@ -119,21 +117,21 @@ const ChangePassword: React.FC = () => {
         const result = await fetch(
           `${process.env.NEXT_PUBLIC_WEBSIDE_URL}/api/quoteUpload/changePassword`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(passwordData),
           }
         );
 
         if (result.ok) {
-          signOut({ callbackUrl: "/signin" });
+          signOut({ callbackUrl: '/signin' });
         } else {
-          setSeverMessage("伺服器發生錯誤，請重新上傳");
+          setSeverMessage('伺服器發生錯誤，請重新上傳');
         }
       } catch (error) {
         console.error(
-          "quote change password page error on submitTheForm function:",
+          'quote change password page error on submitTheForm function:',
           error
         );
       }

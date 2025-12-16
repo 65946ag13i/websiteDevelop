@@ -2,7 +2,7 @@
 import { makeStore, AppStore } from "../../redux/store";
 import { useRef } from "react";
 import { Provider } from "react-redux";
-
+import React from "react";
 export const ReduxProvider = ({
   children,
   // initialData, // 可选的初始数据
